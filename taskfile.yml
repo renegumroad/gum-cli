@@ -26,3 +26,11 @@ tasks:
   vet:
     cmds:
       - go vet -copylocks=false $PKGS
+
+  release-check:
+    cmds:
+      - goreleaser check
+
+  release-build:
+    cmds:
+      - goreleaser build --snapshot --clean
