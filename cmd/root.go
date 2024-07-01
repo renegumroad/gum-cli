@@ -24,7 +24,7 @@ func rootCmd() *cobra.Command {
 		Short:   "gum is a command line interface for Gumroad developers",
 		Version: version.VERSION,
 		Run: func(_ *cobra.Command, _ []string) {
-			
+
 		},
 	}
 
