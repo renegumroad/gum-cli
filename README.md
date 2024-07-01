@@ -6,7 +6,16 @@
 
 ## Installation
 
-TBD
+Download the latest release from GitHub, using your own PAT (Personal Access Token). Replace `<OS>` by `linux`/`darwin` and `<ARCH>` by `arm64`/`amd64` where appropriate.
+
+```shell
+URL=$(curl -s -H "Authorization: token <TOKEN>" https://api.github.com/repos/renehernandez/gum-cli/releases/latest | jq -r '.assets[] | select(.name == "gum_<OS>_<ARCH>") | .url')
+curl -Lv -J -H "Accept: application/octet-stream" -H "Authorization: token <TOKEN>" -o gum $URL
+chmod +x ./gum
+./gum --help
+```
+
+You should see the top-level help information after the above commands
 
 ## Usage
 
