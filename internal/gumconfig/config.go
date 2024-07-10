@@ -49,8 +49,8 @@ func (config *GumConfig) Validate() error {
 		}
 
 		if up.Action != "" {
-			if !actions.Exists(string(up.Action)) {
-				return errors.Errorf("Named action %s does not exist", up.Action)
+			if !actions.SupportedByConfig(string(up.Action)) {
+				return errors.Errorf("Named action %s does not exist or cannot be invoked via config", up.Action)
 			}
 		}
 
@@ -62,7 +62,7 @@ func (config *GumConfig) Validate() error {
 
 	}
 
-	log.Infoln("gum config validated successfully")
+	log.Infoln("gum.yml config validated successfully")
 	return nil
 }
 
