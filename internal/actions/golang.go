@@ -1,6 +1,6 @@
 package actions
 
-import "github.com/renegumroad/gum-cli/internal/homebrew"
+import "github.com/renegumroad/gum-cli/internal/cli/homebrew"
 
 type GolangAction struct {
 }

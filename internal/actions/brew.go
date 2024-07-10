@@ -2,7 +2,7 @@ package actions
 
 import (
 	"github.com/pkg/errors"
-	"github.com/renegumroad/gum-cli/internal/homebrew"
+	"github.com/renegumroad/gum-cli/internal/cli/homebrew"
 )
 
 type BrewAction struct {

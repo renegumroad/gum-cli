@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/renegumroad/gum-cli/internal/cmdexec"
+	"github.com/renegumroad/gum-cli/internal/cli/cmdexec"
 	"github.com/renegumroad/gum-cli/internal/filesystem"
 	"github.com/renegumroad/gum-cli/internal/log"
 )

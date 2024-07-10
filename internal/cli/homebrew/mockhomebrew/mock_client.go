@@ -3,7 +3,7 @@
 package mockhomebrew
 
 import (
-	homebrew "github.com/renegumroad/gum-cli/internal/homebrew"
+	homebrew "github.com/renegumroad/gum-cli/internal/cli/homebrew"
 	mock "github.com/stretchr/testify/mock"
 )
 
