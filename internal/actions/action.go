@@ -50,7 +50,7 @@ type ActionHandler struct {
 
 func NewActionHandler(actions []Action) *ActionHandler {
 	return &ActionHandler{
-		Actions: sortActionsRecursively(actions...),
+		Actions: buildActionList(actions...),
 	}
 }
 
@@ -94,7 +94,7 @@ func (h *ActionHandler) Run() error {
 	return nil
 }
 
-func sortActionsRecursively(actions ...Action) []Action {
+func buildActionList(actions ...Action) []Action {
 	sortedActions := []Action{}
 
 	for _, action := range actions {
@@ -103,7 +103,7 @@ func sortActionsRecursively(actions ...Action) []Action {
 			continue
 		}
 
-		depsActions := sortActionsRecursively(action.Deps()...)
+		depsActions := buildActionList(action.Deps()...)
 
 		for _, depAction := range depsActions {
 			if slices.ContainsFunc(sortedActions, containsAction(depAction)) {
