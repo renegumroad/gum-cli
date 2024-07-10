@@ -60,6 +60,10 @@ func (c *client) EnsureInstalled(pkg Package) error {
 }
 
 func (c *client) Install(pkg Package) error {
+	if pkg.Name == "" {
+		return errors.Errorf("Package name is required")
+	}
+
 	log.Debugf("Installing brew package %s", pkg.Name)
 	args := []string{"install"}
 	if pkg.Cask {
