@@ -33,9 +33,9 @@ func (s *filesystemSuite) TestExists() {
 	s.Require().FileExists(path)
 }
 
-func (s *filesystemSuite) TestCreateTempDir() {
+func (s *filesystemSuite) TestMkdirTemp() {
 	c := New()
-	tempDir, err := c.CreateTempDir()
+	tempDir, err := c.MkdirTemp()
 
 	s.Require().NoError(err, "Expected no error on creating a temp dir")
 	s.Require().DirExists(tempDir)
@@ -51,7 +51,7 @@ func (s *filesystemSuite) TestCopyFile() {
 	c := New()
 	path, _ := c.CurrentDir()
 
-	dir, err := c.CreateTempDir()
+	dir, err := c.MkdirTemp()
 	s.Require().NoError(err)
 	s.Require().DirExists(dir)
 	defer os.RemoveAll(dir)
@@ -69,7 +69,7 @@ func (s *filesystemSuite) TestCopyFile() {
 
 func (s *filesystemSuite) TestIsSymlink() {
 	c := New()
-	tempDir, err := c.CreateTempDir()
+	tempDir, err := c.MkdirTemp()
 	s.Require().NoError(err, "Expected no error on creating a temp dir")
 	defer os.RemoveAll(tempDir)
 
@@ -89,7 +89,7 @@ func (s *filesystemSuite) TestIsSymlink() {
 
 func (s *filesystemSuite) TestWriteString() {
 	c := New()
-	tmpDir, err := c.CreateTempDir()
+	tmpDir, err := c.MkdirTemp()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
 
@@ -117,7 +117,7 @@ func (s *filesystemSuite) TestWriteString() {
 
 func (s *filesystemSuite) TestGetOwner() {
 	c := New()
-	tmpDir, err := c.CreateTempDir()
+	tmpDir, err := c.MkdirTemp()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
 
@@ -141,7 +141,7 @@ func (s *filesystemSuite) TestGetOwner() {
 
 func (s *filesystemSuite) TestChownDirectory() {
 	c := New()
-	tmpDir, err := c.CreateTempDir()
+	tmpDir, err := c.MkdirTemp()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
 
@@ -176,7 +176,7 @@ func (s *filesystemSuite) TestChownDirectory() {
 
 func (s *filesystemSuite) TestChownFile() {
 	c := New()
-	tmpDir, err := c.CreateTempDir()
+	tmpDir, err := c.MkdirTemp()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
 
@@ -215,7 +215,7 @@ func (s *filesystemSuite) verifyOwnership(name string, uid, gid int) {
 
 func (s *filesystemSuite) TestAppendStringNewFile() {
 	c := New()
-	tmpDir, err := c.CreateTempDir()
+	tmpDir, err := c.MkdirTemp()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
 
@@ -232,7 +232,7 @@ func (s *filesystemSuite) TestAppendStringNewFile() {
 
 func (s *filesystemSuite) TestAppendStringExistingFile() {
 	c := New()
-	tmpDir, err := c.CreateTempDir()
+	tmpDir, err := c.MkdirTemp()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
 
@@ -263,7 +263,7 @@ func (s *filesystemSuite) TestAppendStringErrorOnInvalidPath() {
 
 func (s *filesystemSuite) TestIsExecutableWithExecutableFile() {
 	c := New()
-	tmpDir, err := c.CreateTempDir()
+	tmpDir, err := c.MkdirTemp()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
 
@@ -276,7 +276,7 @@ func (s *filesystemSuite) TestIsExecutableWithExecutableFile() {
 
 func (s *filesystemSuite) TestIsExecutableWithNonExecutableFile() {
 	c := New()
-	tmpDir, err := c.CreateTempDir()
+	tmpDir, err := c.MkdirTemp()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
 
@@ -296,7 +296,7 @@ func (s *filesystemSuite) TestIsExecutableWithNonExistingFile() {
 
 func (s *filesystemSuite) TestIsExecutableWithDirectory() {
 	c := New()
-	tmpDir, err := c.CreateTempDir()
+	tmpDir, err := c.MkdirTemp()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
 
@@ -305,7 +305,7 @@ func (s *filesystemSuite) TestIsExecutableWithDirectory() {
 
 func (s *filesystemSuite) TestMkdirAllWithValidPath() {
 	c := New()
-	tempDir, err := c.CreateTempDir()
+	tempDir, err := c.MkdirTemp()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tempDir)
 
@@ -319,7 +319,7 @@ func (s *filesystemSuite) TestMkdirAllWithValidPath() {
 
 func (s *filesystemSuite) TestMkdirAllWithExistingDirectory() {
 	c := New()
-	tempDir, err := c.CreateTempDir()
+	tempDir, err := c.MkdirTemp()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tempDir)
 
@@ -336,7 +336,7 @@ func (s *filesystemSuite) TestMkdirAllWithExistingDirectory() {
 
 func (s *filesystemSuite) TestMkdirAllWithNestedDirectories() {
 	c := New()
-	tempDir, err := c.CreateTempDir()
+	tempDir, err := c.MkdirTemp()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tempDir)
 
@@ -358,7 +358,7 @@ func (s *filesystemSuite) TestMkdirAllWithInvalidPath() {
 
 func (s *filesystemSuite) TestMkdirAllWithFileAsPath() {
 	c := New()
-	tempDir, err := c.CreateTempDir()
+	tempDir, err := c.MkdirTemp()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tempDir)
 

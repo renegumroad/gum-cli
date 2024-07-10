@@ -35,6 +35,10 @@ tasks:
     cmds:
       - golangci-lint run
 
+  mock:
+    cmds:
+      - mockery
+
   release-check:
     cmds:
       - goreleaser check

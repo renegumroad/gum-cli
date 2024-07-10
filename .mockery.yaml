@@ -1,10 +1,19 @@
 with-expecter: true
 filename: mock_{{.InterfaceName | lower }}.go
 dir: "{{.InterfaceDir}}/mock{{.PackageName}}"
+outpkg: mock{{.PackageName}}
+
 packages:
-    github.com/renegumroad/gum-cli/internal/cli/homebrew:
-        # place your package-specific config here
-        config:
-        interfaces:
-            # select the interfaces you want mocked
-            Client: {}
+  github.com/renegumroad/gum-cli/internal/cli/homebrew:
+    # place your package-specific config here
+    config:
+    interfaces:
+      # select the interfaces you want mocked
+      Client: {}
+
+  github.com/renegumroad/gum-cli/internal/filesystem:
+    # place your package-specific config here
+    config:
+    interfaces:
+      # select the interfaces you want mocked
+      Client: {}
