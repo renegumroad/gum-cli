@@ -3,6 +3,7 @@ package actions
 import (
 	"github.com/pkg/errors"
 	"github.com/renegumroad/gum-cli/internal/cli/homebrew"
+	"github.com/renegumroad/gum-cli/internal/systeminfo"
 )
 
 type BrewAction struct {
@@ -25,8 +26,23 @@ func (act *BrewAction) Name() string {
 	return "brew"
 }
 
+func (act *BrewAction) Identifier() string {
+	id := "brew"
+	for _, pkg := range act.packages {
+		id += "-" + pkg.Name
+	}
+
+	return id
+}
+
+func (act *BrewAction) Platforms() []systeminfo.Platform {
+	return []systeminfo.Platform{systeminfo.Darwin, systeminfo.Linux}
+}
+
 func (act *BrewAction) Deps() []Action {
-	return []Action{}
+	return []Action{
+		NewBrewEnsureAction(),
+	}
 }
 
 func (act *BrewAction) Validate() error {
@@ -47,8 +63,22 @@ func (act *BrewAction) Validate() error {
 	return err
 }
 
-func (act *BrewAction) Public() bool {
+func (act *BrewAction) IsPublic() bool {
 	return true
+}
+
+func (act *BrewAction) ShouldRun() bool {
+	if depsShouldRun(act.Deps()) {
+		return true
+	}
+
+	for _, pkg := range act.packages {
+		if !act.brew.IsInstalled(pkg) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (act *BrewAction) Run() error {

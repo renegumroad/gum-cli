@@ -9,12 +9,20 @@ import (
 	"github.com/pkg/errors"
 )
 
+var (
+	Darwin Platform = "darwin"
+	Linux  Platform = "linux"
+)
+
+type Platform = string
+
 type Client interface {
 	IsLinux() bool
 	IsMacOS() bool
 	GetSudoOriginalUser() (*UserInfo, error)
 	IsSudo() bool
 	GetSudoUsername() string
+	CurrentPlatform() Platform
 }
 
 type client struct {
@@ -43,12 +51,16 @@ func newClientWithComponents(user userHandler) Client {
 	}
 }
 
+func (c *client) CurrentPlatform() Platform {
+	return runtime.GOOS
+}
+
 func (c *client) IsLinux() bool {
-	return runtime.GOOS == "linux"
+	return runtime.GOOS == Linux
 }
 
 func (c *client) IsMacOS() bool {
-	return runtime.GOOS == "darwin"
+	return runtime.GOOS == Darwin
 }
 
 func (c *client) IsSudo() bool {
