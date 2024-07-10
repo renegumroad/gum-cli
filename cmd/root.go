@@ -15,7 +15,7 @@ import (
 )
 
 var rootFlags = struct {
-	LogLevel string
+	LogLevel log.LogLevel
 }{
 	LogLevel: "info",
 }
