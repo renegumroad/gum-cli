@@ -9,11 +9,17 @@ import (
 	"github.com/pkg/errors"
 )
 
+var (
+	ShellZsh  = "/bin/zsh"
+	ShellBash = "/bin/bash"
+	ShellSh   = "/bin/sh"
+)
+
 type Client interface {
 	IsLinux() bool
 	IsMacOS() bool
-	IsWindows() bool
 	GetSudoOriginalUser() (*userInfo, error)
+	GetShell() string
 }
 
 type client struct {
@@ -50,10 +56,6 @@ func (c *client) IsMacOS() bool {
 	return runtime.GOOS == "darwin"
 }
 
-func (c *client) IsWindows() bool {
-	return runtime.GOOS == "windows"
-}
-
 func (c *client) GetSudoOriginalUser() (*userInfo, error) {
 	sudoUsername := os.Getenv("SUDO_USER")
 	if sudoUsername == "" {
@@ -73,6 +75,14 @@ func (c *client) GetSudoOriginalUser() (*userInfo, error) {
 	}
 
 	return info, nil
+}
+
+func (c *client) GetShell() string {
+	if shell := os.Getenv("SHELL"); shell != "" {
+		return shell
+	}
+
+	return "/bin/sh"
 }
 
 func newUserHandler() userHandler {

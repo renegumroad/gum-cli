@@ -24,9 +24,11 @@ type Client interface {
 	ChownRecursively(path string, uid, gid int) error
 	GetOwner(path string) (*userInfo, error)
 	MakeExecutable(path string) error
+	IsExecutable(path string) bool
 	CreateTempDir() (string, error)
 	EqualFiles(source, destination string) (bool, error)
 	WriteString(path, content string) error
+	AppendString(path, content string) error
 }
 
 type userInfo struct {
@@ -104,10 +106,6 @@ func (c *client) copySymlink(source, destination string) error {
 }
 
 func (c *client) RootDir() string {
-	if c.sys.IsWindows() {
-		return os.Getenv("SystemDrive") + "\\"
-	}
-
 	return "/"
 }
 
@@ -155,6 +153,15 @@ func (c *client) GetOwner(path string) (*userInfo, error) {
 	}
 
 	return userInfo, nil
+}
+
+func (c *client) IsExecutable(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+
+	return info.Mode()&0111 != 0
 }
 
 func (c *client) MakeExecutable(path string) error {
@@ -205,6 +212,18 @@ func (c *client) EqualFiles(source, destination string) (bool, error) {
 	}
 
 	return bytes.Equal(sourceContent, destinationContent), nil
+}
+
+func (c *client) AppendString(path, content string) error {
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	_, err = f.WriteString(content)
+	return err
 }
 
 // WriteString writes the content to a file at the specified path.
