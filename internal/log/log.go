@@ -116,5 +116,5 @@ func Fatalln(a ...interface{}) {
 }
 
 func Fatalf(format string, a ...interface{}) {
-	log.Fatal().Msgf("format", a...)
+	log.Fatal().Msgf(format, a...)
 }
