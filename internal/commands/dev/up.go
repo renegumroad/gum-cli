@@ -4,6 +4,7 @@ import (
 	"github.com/renegumroad/gum-cli/internal/actions"
 	"github.com/renegumroad/gum-cli/internal/filesystem"
 	"github.com/renegumroad/gum-cli/internal/gumconfig"
+	"github.com/renegumroad/gum-cli/internal/log"
 )
 
 type UpImpl struct {
@@ -22,6 +23,7 @@ func newUpWithComponents(fs filesystem.Client) *UpImpl {
 }
 
 func (impl *UpImpl) Validate() error {
+	log.Debugf("Validating up command")
 	currentDir, err := impl.fs.CurrentDir()
 	if err != nil {
 		return err
@@ -32,11 +34,30 @@ func (impl *UpImpl) Validate() error {
 		return err
 	}
 
-	return impl.config.Validate()
+	if err := impl.config.Validate(); err != nil {
+		return err
+	}
+
+	var action actions.Action
+	for _, up := range impl.config.Up {
+		if up.Action != "" {
+			action = actions.Get(string(up.Action))
+		} else {
+			action = actions.NewBrewAction(up.Brew)
+		}
+
+		if err := action.Validate(); err != nil {
+			return err
+		}
+	}
+
+	log.Infof("%d action(s) validated successfully", len(impl.config.Up))
+
+	return nil
 }
 
 func (impl *UpImpl) Run() error {
-	var err error
+	log.Debugf("Running up command")
 	var action actions.Action
 
 	for _, up := range impl.config.Up {
@@ -46,8 +67,7 @@ func (impl *UpImpl) Run() error {
 			action = actions.NewBrewAction(up.Brew)
 		}
 
-		err = action.Run()
-		if err != nil {
+		if err := action.Run(); err != nil {
 			return err
 		}
 	}
