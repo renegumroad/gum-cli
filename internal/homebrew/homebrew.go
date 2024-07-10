@@ -35,7 +35,7 @@ func New() Client {
 func newClientWithComponents(fs filesystem.Client) *client {
 	return &client{
 		fs: fs,
-}
+	}
 }
 
 func (c *client) EnsureInstalled(pkg Package) error {
