@@ -5,6 +5,10 @@ env:
     sh: go list ./... | grep -v "/vendor/\|/example"
   VERSION:
     sh: git rev-parse HEAD
+  COMMIT:
+    sh: git rev-parse HEAD
+  BRANCH:
+    sh: git rev-parse --abbrev-ref HEAD
 
 tasks:
   build:

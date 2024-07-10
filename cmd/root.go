@@ -6,6 +6,7 @@ package cmd
 import (
 	"os"
 
+	initCmd "github.com/renehernandez/gum-cli/cmd/init"
 	"github.com/renehernandez/gum-cli/internal/log"
 	"github.com/renehernandez/gum-cli/internal/version"
 
@@ -24,11 +25,12 @@ func rootCmd() *cobra.Command {
 		Short:   "gum is a command line interface for Gumroad developers",
 		Version: version.VERSION,
 		Run: func(_ *cobra.Command, _ []string) {
-
 		},
 	}
 
 	rootCmd.PersistentFlags().StringVar(&rootFlags.LogLevel, "log-level", "info", "set log level")
+
+	rootCmd.AddCommand(initCmd.Cmd())
 
 	return rootCmd
 }

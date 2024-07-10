@@ -72,6 +72,8 @@ func SetLogLevel(level string) error {
 		zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	case "error":
 		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
+	case "fatal":
+		zerolog.SetGlobalLevel(zerolog.FatalLevel)
 	default:
 		return errors.Errorf("Unexpected log level: %s", level)
 	}
@@ -109,4 +111,12 @@ func Errorln(a ...interface{}) {
 
 func Errorf(format string, a ...interface{}) {
 	log.Error().Msgf(format, a...)
+}
+
+func Fatalln(a ...interface{}) {
+	log.Fatal().Msgf("%s", a...)
+}
+
+func Fatalf(format string, a ...interface{}) {
+	log.Fatal().Msgf(format, a...)
 }

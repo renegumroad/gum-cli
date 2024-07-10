@@ -16,7 +16,11 @@ before:
     - go generate ./...
 
 builds:
-  - env:
+  - ldflags:
+      - -s -w
+      - -X github.com/renehernandez/gum-cli/internal/version.VERSION={{.Version}}
+      - -X github.com/renehernandez/gum-cli/internal/version.RELEASE=true
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
