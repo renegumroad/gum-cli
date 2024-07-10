@@ -45,6 +45,8 @@ func (act *BrewAction) Validate() error {
 	var err error
 	if missingNameCount > 0 {
 		err = errors.Errorf("Failed %s action validation: %d package(s) missing name.", act.Name(), missingNameCount)
+	} else if len(act.packages) == 0 {
+		err = errors.Errorf("Failed %s action validation: no packages specified.", act.Name())
 	}
 
 	if depsError != nil {

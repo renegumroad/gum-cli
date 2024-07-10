@@ -2,7 +2,7 @@
 
 ## What is gum?
 
-`gum` is our in-house development toolkit!
+`gum` is our in-house developer toolkit!
 
 ## Installation
 
@@ -18,6 +18,24 @@ chmod +x gum
 You should see the top-level help information after the above commands
 
 ## Usage
+
+## `gum init`
+
+Configures workstation with prerequisites for gum
+
+## `gum dev up`
+
+Configures development dependencies in `gum.yml`
+
+```yaml
+# gum.y(a)ml
+
+up:
+  - action: golang
+  - brew:
+      - name: jq
+      - name: yq
+```
 
 ### Logging
 
