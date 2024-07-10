@@ -22,18 +22,19 @@ type Client interface {
 	IsInstalled(pkg Package) bool
 	EnsureInstalled(pkg Package) error
 	Link(pkg Package) error
+	Upgrade(pkg Package) error
 }
 
 type client struct {
 	fs     filesystem.Client
-	cmdGen cmdexec.CmdGenerator
+	cmdGen cmdexec.EnvCmdGenerator
 }
 
 func New() Client {
-	return newClientWithComponents(filesystem.New(), cmdexec.NewCommandGenerator())
+	return newClientWithComponents(filesystem.New(), cmdexec.NewEnvCommandGenerator())
 }
 
-func newClientWithComponents(fs filesystem.Client, gen cmdexec.CmdGenerator) *client {
+func newClientWithComponents(fs filesystem.Client, gen cmdexec.EnvCmdGenerator) *client {
 	return &client{
 		fs:     fs,
 		cmdGen: gen,
@@ -111,8 +112,24 @@ func (c *client) Link(pkg Package) error {
 	return c.runBrew("link", "--force", "--overwrite", pkg.Name)
 }
 
+func (c *client) Upgrade(pkg Package) error {
+	if pkg.Name == "" {
+		return errors.Errorf("Package name is required")
+	}
+
+	log.Debugf("Upgrading brew package %s", pkg.Name)
+
+	args := []string{"upgrade"}
+	if pkg.Cask {
+		args = append(args, "--cask")
+	}
+	args = append(args, pkg.Name)
+
+	return c.runBrew(args...)
+}
+
 func (c *client) runBrew(args ...string) error {
-	cmd := c.cmdGen("brew", args...)
+	cmd := c.cmdGen("brew", args, []string{"HOMEBREW_NO_INSTALL_CLEANUP=1"})
 
 	err := cmd.Run()
 

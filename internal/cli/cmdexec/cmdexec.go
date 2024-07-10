@@ -88,6 +88,6 @@ func NewCommandGenerator() CmdGenerator {
 
 type EnvCmdGenerator func(cmd string, args, env []string) Command
 
-func EnvCommandGenerator() EnvCmdGenerator {
+func NewEnvCommandGenerator() EnvCmdGenerator {
 	return NewWithEnv
 }

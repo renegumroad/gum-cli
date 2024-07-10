@@ -8,6 +8,7 @@ import (
 var (
 	namedActions = map[string]Action{
 		"golang": &GolangAction{},
+		"ruby":   &RubyAction{},
 	}
 )
 
