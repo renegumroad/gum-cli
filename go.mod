@@ -1,4 +1,4 @@
-module github.com/renehernandez/gum-cli
+module github.com/renegumroad/gum-cli
 
 go 1.22.4
 

@@ -16,7 +16,7 @@ tasks:
       - |
         go build -v -o build/darwin_arm64/gum \
           -ldflags "-s -w \
-          -X github.com/renehernandez/gum-cli/internal/version.VERSION=${VERSION}" \
+          -X github.com/renegumroad/gum-cli/internal/version.VERSION=${VERSION}" \
           main.go
 
   test:

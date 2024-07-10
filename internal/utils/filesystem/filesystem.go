@@ -11,8 +11,8 @@ import (
 	"syscall"
 
 	"github.com/pkg/errors"
-	"github.com/renehernandez/gum-cli/internal/log"
-	"github.com/renehernandez/gum-cli/internal/utils/systeminfo"
+	"github.com/renegumroad/gum-cli/internal/log"
+	"github.com/renegumroad/gum-cli/internal/utils/systeminfo"
 )
 
 type Client interface {

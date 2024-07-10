@@ -18,8 +18,8 @@ before:
 builds:
   - ldflags:
       - -s -w
-      - -X github.com/renehernandez/gum-cli/internal/version.VERSION={{.Version}}
-      - -X github.com/renehernandez/gum-cli/internal/version.RELEASE=true
+      - -X github.com/renegumroad/gum-cli/internal/version.VERSION={{.Version}}
+      - -X github.com/renegumroad/gum-cli/internal/version.RELEASE=true
     env:
       - CGO_ENABLED=0
     goos:

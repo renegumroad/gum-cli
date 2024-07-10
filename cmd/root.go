@@ -6,9 +6,9 @@ package cmd
 import (
 	"os"
 
-	initCmd "github.com/renehernandez/gum-cli/cmd/init"
-	"github.com/renehernandez/gum-cli/internal/log"
-	"github.com/renehernandez/gum-cli/internal/version"
+	initCmd "github.com/renegumroad/gum-cli/cmd/init"
+	"github.com/renegumroad/gum-cli/internal/log"
+	"github.com/renegumroad/gum-cli/internal/version"
 
 	"github.com/spf13/cobra"
 )

@@ -1,8 +1,8 @@
 package init
 
 import (
-	initImpl "github.com/renehernandez/gum-cli/internal/commands/init"
-	"github.com/renehernandez/gum-cli/internal/utils"
+	initImpl "github.com/renegumroad/gum-cli/internal/commands/init"
+	"github.com/renegumroad/gum-cli/internal/utils"
 	"github.com/spf13/cobra"
 )
 

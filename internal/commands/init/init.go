@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/errors"
-	"github.com/renehernandez/gum-cli/assets"
-	"github.com/renehernandez/gum-cli/internal/log"
-	"github.com/renehernandez/gum-cli/internal/shellmanager"
-	"github.com/renehernandez/gum-cli/internal/utils/filesystem"
-	"github.com/renehernandez/gum-cli/internal/utils/systeminfo"
+	"github.com/renegumroad/gum-cli/assets"
+	"github.com/renegumroad/gum-cli/internal/log"
+	"github.com/renegumroad/gum-cli/internal/shellmanager"
+	"github.com/renegumroad/gum-cli/internal/utils/filesystem"
+	"github.com/renegumroad/gum-cli/internal/utils/systeminfo"
 )
 
 type InitImpl struct {

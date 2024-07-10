@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/renehernandez/gum-cli/internal/utils/filesystem"
+	"github.com/renegumroad/gum-cli/internal/utils/filesystem"
 	"github.com/stretchr/testify/suite"
 )
 

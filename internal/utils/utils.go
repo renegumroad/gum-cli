@@ -1,6 +1,6 @@
 package utils
 
-import "github.com/renehernandez/gum-cli/internal/log"
+import "github.com/renegumroad/gum-cli/internal/log"
 
 func CheckFatalError(err error) {
 	if err != nil {
