@@ -46,7 +46,7 @@ func (impl *UpImpl) Validate() error {
 			action = actions.NewBrewAction(up.Brew)
 		}
 
-		if err := action.Validate(); err != nil {
+		if err := actions.Validate(action); err != nil {
 			return err
 		}
 	}
@@ -67,7 +67,7 @@ func (impl *UpImpl) Run() error {
 			action = actions.NewBrewAction(up.Brew)
 		}
 
-		if err := action.Run(); err != nil {
+		if err := actions.Run(action); err != nil {
 			return err
 		}
 	}

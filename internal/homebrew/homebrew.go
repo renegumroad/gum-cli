@@ -35,10 +35,12 @@ func New() Client {
 func newClientWithComponents(fs filesystem.Client) *client {
 	return &client{
 		fs: fs,
-	}
+}
 }
 
 func (c *client) EnsureInstalled(pkg Package) error {
+	log.Infof("Ensuring package %s is installed", pkg.Name)
+
 	if c.IsInstalled(pkg) {
 		log.Infof("Brew package %s is already installed", pkg.Name)
 		return nil

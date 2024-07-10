@@ -6,7 +6,9 @@ import (
 )
 
 var (
-	namedActions = map[string]Action{}
+	namedActions = map[string]Action{
+		"golang": &GolangAction{},
+	}
 )
 
 type Action interface {
@@ -25,15 +27,61 @@ func Get(name string) Action {
 	return namedActions[name]
 }
 
+func Validate(action Action) error {
+	helper := &actionHelper{}
+
+	log.Debugf("Validating action %s", action.Name())
+	depsError := helper.validateDependencies(action.Deps())
+
+	err := action.Validate()
+
+	if depsError != nil {
+		if err != nil {
+			err = errors.Errorf("%s: deps: %s", err, depsError)
+		} else {
+			err = depsError
+		}
+	}
+
+	if err != nil {
+		log.Debugf("Action %s failed validation", action.Name())
+	} else {
+		log.Debugf("Action %s validated", action.Name())
+	}
+
+	return err
+}
+
+func Run(action Action) error {
+	helper := &actionHelper{}
+
+	log.Infof("Running action %s", action.Name())
+	if err := helper.runDependencies(action.Deps()); err != nil {
+		return err
+	}
+
+	if err := action.Run(); err != nil {
+		log.Errorf("Action %s run failed: %s", action.Name(), err)
+		return err
+	}
+
+	log.Infof("Action %s ran successfully", action.Name())
+
+	return nil
+}
+
 type actionHelper struct {
 }
 
 func (h *actionHelper) validateDependencies(deps []Action) error {
 	var err error
 	for _, dep := range deps {
+		log.Debugf("Validating dependent action %s", dep.Name())
 		depError := dep.Validate()
 		if depError != nil {
 			err = errors.Errorf("%s\n- %s: %s", dep.Name(), depError, err)
+		} else {
+			log.Debugf("Dependent action %s validated", dep.Name())
 		}
 	}
 
@@ -46,35 +94,14 @@ func (h *actionHelper) validateDependencies(deps []Action) error {
 
 func (h *actionHelper) runDependencies(deps []Action) error {
 	for _, dep := range deps {
+		log.Debugf("Running dependent action %s", dep.Name())
 		err := dep.Run()
 		if err != nil {
 			return errors.Errorf("Failed running dependent action %s: %s", dep.Name(), err)
 		}
+
+		log.Debugf("Dependent action %s ran successfully", dep.Name())
 	}
 
 	return nil
-}
-
-func (h *actionHelper) logValidationMsg(action Action) {
-	log.Debugf("Validating action %s", action.Name())
-}
-
-func (h *actionHelper) logValidationSuccessMsg(action Action) {
-	log.Debugf("Action %s validated successfully", action.Name())
-}
-
-func (h *actionHelper) logValidationErrorMsg(action Action, err error) {
-	log.Errorf("Action %s validation failed: %s", action.Name(), err)
-}
-
-func (h *actionHelper) logRunMsg(action Action) {
-	log.Infof("Running action %s", action.Name())
-}
-
-func (h *actionHelper) logRunSuccessMsg(action Action) {
-	log.Infof("Action %s ran successfully", action.Name())
-}
-
-func (h *actionHelper) logRunErrorMsg(action Action, err error) {
-	log.Errorf("Action %s run failed: %s", action.Name(), err)
 }
