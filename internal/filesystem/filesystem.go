@@ -12,7 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/renegumroad/gum-cli/internal/log"
-	"github.com/renegumroad/gum-cli/internal/utils/systeminfo"
+	"github.com/renegumroad/gum-cli/internal/systeminfo"
 )
 
 type Client interface {

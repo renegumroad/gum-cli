@@ -10,7 +10,7 @@ import (
 	"github.com/renegumroad/gum-cli/internal/filesystem"
 	"github.com/renegumroad/gum-cli/internal/log"
 	"github.com/renegumroad/gum-cli/internal/shellmanager"
-	"github.com/renegumroad/gum-cli/internal/utils/systeminfo"
+	"github.com/renegumroad/gum-cli/internal/systeminfo"
 )
 
 type InitImpl struct {
