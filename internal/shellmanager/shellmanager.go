@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/renegumroad/gum-cli/internal/utils/filesystem"
+	"github.com/renegumroad/gum-cli/internal/filesystem"
 )
 
 type ShellType string
