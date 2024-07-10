@@ -11,7 +11,7 @@ Download the latest release from GitHub, using your own PAT (Personal Access Tok
 ```shell
 URL=$(curl -s -H "Authorization: token <TOKEN>" https://api.github.com/repos/renehernandez/gum-cli/releases/latest | jq -r '.assets[] | select(.name == "gum_<OS>_<ARCH>") | .url')
 curl -Lv -J -H "Accept: application/octet-stream" -H "Authorization: token <TOKEN>" -o gum $URL
-chmod +x ./gum
+chmod +x gum
 ./gum --help
 ```
 

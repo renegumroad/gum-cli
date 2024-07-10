@@ -17,7 +17,7 @@ type filesystemSuite struct {
 }
 
 func (s *filesystemSuite) TestCurrentDir() {
-	c := NewClient()
+	c := New()
 	path, err := c.CurrentDir()
 
 	s.Require().NoError(err)
@@ -25,7 +25,7 @@ func (s *filesystemSuite) TestCurrentDir() {
 }
 
 func (s *filesystemSuite) TestExists() {
-	c := NewClient()
+	c := New()
 	path, _ := c.CurrentDir()
 
 	path = filepath.Join(path, "filesystem.go")
@@ -34,7 +34,7 @@ func (s *filesystemSuite) TestExists() {
 }
 
 func (s *filesystemSuite) TestCreateTempDir() {
-	c := NewClient()
+	c := New()
 	tempDir, err := c.CreateTempDir()
 
 	s.Require().NoError(err, "Expected no error on creating a temp dir")
@@ -48,7 +48,7 @@ func (s *filesystemSuite) TestCreateTempDir() {
 }
 
 func (s *filesystemSuite) TestCopyFile() {
-	c := NewClient()
+	c := New()
 	path, _ := c.CurrentDir()
 
 	dir, err := c.CreateTempDir()
@@ -68,7 +68,7 @@ func (s *filesystemSuite) TestCopyFile() {
 }
 
 func (s *filesystemSuite) TestIsSymlink() {
-	c := NewClient()
+	c := New()
 	tempDir, err := c.CreateTempDir()
 	s.Require().NoError(err, "Expected no error on creating a temp dir")
 	defer os.RemoveAll(tempDir)
@@ -88,7 +88,7 @@ func (s *filesystemSuite) TestIsSymlink() {
 }
 
 func (s *filesystemSuite) TestWriteString() {
-	c := NewClient()
+	c := New()
 	tmpDir, err := c.CreateTempDir()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
@@ -116,7 +116,7 @@ func (s *filesystemSuite) TestWriteString() {
 }
 
 func (s *filesystemSuite) TestGetOwner() {
-	c := NewClient()
+	c := New()
 	tmpDir, err := c.CreateTempDir()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
@@ -139,8 +139,8 @@ func (s *filesystemSuite) TestGetOwner() {
 	s.Require().Equal(currentUser.Uid, fmt.Sprint(userInfo.Id), "The owner user ID should match the current user ID")
 }
 
-func (s *filesystemSuite) TestChownRecursively() {
-	c := NewClient()
+func (s *filesystemSuite) TestChownDirectory() {
+	c := New()
 	tmpDir, err := c.CreateTempDir()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
@@ -165,23 +165,142 @@ func (s *filesystemSuite) TestChownRecursively() {
 	s.Require().NoError(err)
 
 	// Perform the recursive chown
-	err = c.ChownRecursively(tmpDir, uid, gid)
+	err = c.Chown(tmpDir, uid, gid)
 	s.Require().NoError(err)
 
 	// Verify ownership of the directory and file
-	verifyOwnership := func(name string) {
-		info, err := os.Stat(name)
-		s.Require().NoError(err)
 
-		stat, ok := info.Sys().(*syscall.Stat_t)
-		s.Require().True(ok, "Expected file info to be syscall.Stat_t")
+	s.verifyOwnership(subDir, uid, gid)
+	s.verifyOwnership(tmpFile.Name(), uid, gid)
+}
 
-		s.Equal(uint32(uid), stat.Uid, "UID should match")
-		s.Equal(uint32(gid), stat.Gid, "GID should match")
-	}
+func (s *filesystemSuite) TestChownFile() {
+	c := New()
+	tmpDir, err := c.CreateTempDir()
+	s.Require().NoError(err)
+	defer os.RemoveAll(tmpDir)
 
-	verifyOwnership(subDir)
-	verifyOwnership(tmpFile.Name())
+	// Create a subdirectory and a file inside tmpDir to test recursive chown
+	tempfile := filepath.Join(tmpDir, "testfile.txt")
+	err = c.WriteString(tempfile, "test")
+	s.Require().NoError(err)
+
+	// Get current user ID and group ID for testing
+	currentUser, err := user.Current()
+	s.Require().NoError(err)
+
+	uid, err := strconv.Atoi(currentUser.Uid)
+	s.Require().NoError(err)
+
+	gid, err := strconv.Atoi(currentUser.Gid)
+	s.Require().NoError(err)
+
+	// Perform the recursive chown
+	err = c.Chown(tmpDir, uid, gid)
+	s.Require().NoError(err)
+
+	s.verifyOwnership(tempfile, uid, gid)
+}
+
+func (s *filesystemSuite) verifyOwnership(name string, uid, gid int) {
+	info, err := os.Stat(name)
+	s.Require().NoError(err)
+
+	stat, ok := info.Sys().(*syscall.Stat_t)
+	s.Require().True(ok, "Expected file info to be syscall.Stat_t")
+
+	s.Equal(uint32(uid), stat.Uid, "UID should match")
+	s.Equal(uint32(gid), stat.Gid, "GID should match")
+}
+
+func (s *filesystemSuite) TestAppendStringNewFile() {
+	c := New()
+	tmpDir, err := c.CreateTempDir()
+	s.Require().NoError(err)
+	defer os.RemoveAll(tmpDir)
+
+	filePath := filepath.Join(tmpDir, "newfile.txt")
+	content := "Hello, World!"
+
+	err = c.AppendString(filePath, content)
+	s.Require().NoError(err, "Expected no error on appending to a new file")
+
+	readContent, err := os.ReadFile(filePath)
+	s.Require().NoError(err, "Expected no error on reading the file")
+	s.Require().Equal(content, string(readContent), "Content appended and read should match")
+}
+
+func (s *filesystemSuite) TestAppendStringExistingFile() {
+	c := New()
+	tmpDir, err := c.CreateTempDir()
+	s.Require().NoError(err)
+	defer os.RemoveAll(tmpDir)
+
+	filePath := filepath.Join(tmpDir, "existingfile.txt")
+	initialContent := "Initial Content. "
+	additionalContent := "Appended Content."
+
+	// Create file with initial content
+	err = os.WriteFile(filePath, []byte(initialContent), 0644)
+	s.Require().NoError(err, "Expected no error on creating a file with initial content")
+
+	// Append additional content
+	err = c.AppendString(filePath, additionalContent)
+	s.Require().NoError(err, "Expected no error on appending to an existing file")
+
+	readContent, err := os.ReadFile(filePath)
+	s.Require().NoError(err, "Expected no error on reading the file")
+	expectedContent := initialContent + additionalContent
+	s.Require().Equal(expectedContent, string(readContent), "Content should include both initial and appended content")
+}
+
+func (s *filesystemSuite) TestAppendStringErrorOnInvalidPath() {
+	c := New()
+	invalidPath := "/invalid/path/to/file.txt"
+	err := c.AppendString(invalidPath, "Some content")
+	s.Require().Error(err, "Expected an error on appending to a file with an invalid path")
+}
+
+func (s *filesystemSuite) TestIsExecutableWithExecutableFile() {
+	c := New()
+	tmpDir, err := c.CreateTempDir()
+	s.Require().NoError(err)
+	defer os.RemoveAll(tmpDir)
+
+	filePath := filepath.Join(tmpDir, "executable")
+	err = os.WriteFile(filePath, []byte("#!/bin/bash\necho Hello"), 0755)
+	s.Require().NoError(err)
+
+	s.Require().True(c.IsExecutable(filePath))
+}
+
+func (s *filesystemSuite) TestIsExecutableWithNonExecutableFile() {
+	c := New()
+	tmpDir, err := c.CreateTempDir()
+	s.Require().NoError(err)
+	defer os.RemoveAll(tmpDir)
+
+	filePath := filepath.Join(tmpDir, "non_executable")
+	err = os.WriteFile(filePath, []byte("Hello, World!"), 0644)
+	s.Require().NoError(err)
+
+	s.Require().False(c.IsExecutable(filePath))
+}
+
+func (s *filesystemSuite) TestIsExecutableWithNonExistingFile() {
+	c := New()
+	filePath := "/path/to/non/existing/file"
+
+	s.Require().False(c.IsExecutable(filePath))
+}
+
+func (s *filesystemSuite) TestIsExecutableWithDirectory() {
+	c := New()
+	tmpDir, err := c.CreateTempDir()
+	s.Require().NoError(err)
+	defer os.RemoveAll(tmpDir)
+
+	s.Require().True(c.IsExecutable(tmpDir))
 }
 
 func TestFileSystemSuite(t *testing.T) {

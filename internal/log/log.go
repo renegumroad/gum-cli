@@ -72,6 +72,8 @@ func SetLogLevel(level string) error {
 		zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	case "error":
 		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
+	case "fatal":
+		zerolog.SetGlobalLevel(zerolog.FatalLevel)
 	default:
 		return errors.Errorf("Unexpected log level: %s", level)
 	}
