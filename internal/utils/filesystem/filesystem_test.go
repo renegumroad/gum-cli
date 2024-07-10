@@ -14,20 +14,22 @@ type filesystemSuite struct {
 }
 
 func (s *filesystemSuite) TestCurrentDir() {
-	path, err := CurrentDir()
+	c := NewClient()
+	path, err := c.CurrentDir()
 
 	assert.Nil(s.T(), err)
 	assert.NotEmpty(s.T(), path)
 }
 
 func (s *filesystemSuite) TestExists() {
-	path, _ := CurrentDir()
+	c := NewClient()
+	path, _ := c.CurrentDir()
 
 	path = filepath.Join(path, "filesystem.go")
 
 	fmt.Printf("Path: %s\n", path)
 
-	assert.True(s.T(), Exists(path))
+	assert.True(s.T(), c.Exists(path))
 }
 
 func TestFilesystemSuite(t *testing.T) {
