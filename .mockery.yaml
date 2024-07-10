@@ -2,7 +2,7 @@ with-expecter: true
 filename: mock_{{.InterfaceName | lower }}.go
 dir: "{{.InterfaceDir}}/mock{{.PackageName}}"
 packages:
-    github.com/renegumroad/gum-cli/internal/homebrew:
+    github.com/renegumroad/gum-cli/internal/cli/homebrew:
         # place your package-specific config here
         config:
         interfaces:

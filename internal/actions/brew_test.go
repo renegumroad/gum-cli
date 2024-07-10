@@ -3,8 +3,8 @@ package actions
 import (
 	"testing"
 
-	"github.com/renegumroad/gum-cli/internal/homebrew"
-	"github.com/renegumroad/gum-cli/internal/homebrew/mockhomebrew"
+	"github.com/renegumroad/gum-cli/internal/cli/homebrew"
+	"github.com/renegumroad/gum-cli/internal/cli/homebrew/mockhomebrew"
 	"github.com/renegumroad/gum-cli/internal/log"
 	"github.com/stretchr/testify/suite"
 )

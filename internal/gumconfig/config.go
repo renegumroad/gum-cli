@@ -5,8 +5,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/renegumroad/gum-cli/internal/actions"
+	"github.com/renegumroad/gum-cli/internal/cli/homebrew"
 	"github.com/renegumroad/gum-cli/internal/filesystem"
-	"github.com/renegumroad/gum-cli/internal/homebrew"
 	"github.com/renegumroad/gum-cli/internal/log"
 	"github.com/renegumroad/gum-cli/internal/yaml"
 )
