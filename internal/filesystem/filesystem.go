@@ -30,7 +30,7 @@ type Client interface {
 	EnsureNonSudoOwnership(path string) error
 	MakeExecutable(path string) error
 	IsExecutable(path string) bool
-	CreateTempDir() (string, error)
+	MkdirTemp() (string, error)
 	EqualFiles(source, destination string) (bool, error)
 	WriteString(path, content string) error
 	AppendString(path, content string) error
@@ -247,7 +247,7 @@ func (c *client) MakeExecutable(path string) error {
 	return nil
 }
 
-func (c *client) CreateTempDir() (string, error) {
+func (c *client) MkdirTemp() (string, error) {
 	return os.MkdirTemp("", "gum_*")
 }
 

@@ -25,16 +25,18 @@ type Client interface {
 }
 
 type client struct {
-	fs filesystem.Client
+	fs     filesystem.Client
+	cmdGen cmdexec.CmdGenerator
 }
 
 func New() Client {
-	return newClientWithComponents(filesystem.New())
+	return newClientWithComponents(filesystem.New(), cmdexec.NewCommandGenerator())
 }
 
-func newClientWithComponents(fs filesystem.Client) *client {
+func newClientWithComponents(fs filesystem.Client, gen cmdexec.CmdGenerator) *client {
 	return &client{
-		fs: fs,
+		fs:     fs,
+		cmdGen: gen,
 	}
 }
 
@@ -72,10 +74,14 @@ func (c *client) Install(pkg Package) error {
 		args = append(args, "--cask")
 	}
 	args = append(args, pkg.Name)
-	return run(args...)
+	return c.runBrew(args...)
 }
 
 func (c *client) IsInstalled(pkg Package) bool {
+	if pkg.Name == "" {
+		return false
+	}
+
 	prefix := os.Getenv("HOMEBREW_PREFIX")
 
 	var pkgPath string
@@ -89,20 +95,29 @@ func (c *client) IsInstalled(pkg Package) bool {
 }
 
 func (c *client) Link(pkg Package) error {
+	if pkg.Name == "" {
+		return errors.Errorf("Package name is required")
+	}
+
 	if !pkg.Link {
 		return nil
 	}
+
+	if pkg.Cask {
+		return errors.Errorf("Cannot link cask package %s", pkg.Name)
+	}
+
 	log.Debugf("Linking brew package %s", pkg.Name)
-	return run("link", pkg.Name, "--force", "--overwrite")
+	return c.runBrew("link", "--force", "--overwrite", pkg.Name)
 }
 
-func run(args ...string) error {
-	cmd := cmdexec.New("brew", args...)
+func (c *client) runBrew(args ...string) error {
+	cmd := c.cmdGen("brew", args...)
 
 	err := cmd.Run()
 
 	if err != nil {
-		return errors.Errorf("brew %s failed:. err: %s stdout: %s stderr: %s", strings.Join(args, " "), err, cmd.Stdout, cmd.Stderr)
+		return errors.Errorf("brew %s failed:. err: %s stdout: %s stderr: %s", strings.Join(args, " "), err, cmd.Stdout(), cmd.Stderr())
 	}
 
 	return nil
