@@ -87,6 +87,9 @@ func (c *client) IsInstalled(pkg Package) bool {
 }
 
 func (c *client) Link(pkg Package) error {
+	if !pkg.Link {
+		return nil
+	}
 	log.Debugf("Linking brew package %s", pkg.Name)
 	return run("link", pkg.Name, "--force", "--overwrite")
 }
