@@ -1,0 +1,28 @@
+version: '3'
+
+env:
+  PKGS:
+    sh: go list ./... | grep -v "/vendor/\|/example"
+  VERSION:
+    sh: git rev-parse HEAD
+
+tasks:
+  build:
+    cmds:
+      - |
+        go build -v -o build/darwin_arm64/gum \
+          -ldflags "-s -w \
+          -X github.com/renehernandez/gum-cli/internal/version.VERSION=${VERSION}" \
+          main.go
+
+  test:
+    cmds:
+      - go test -v $PKGS -race
+
+  fmt:
+    cmds:
+      - go fmt $PKGS
+
+  vet:
+    cmds:
+      - go vet -copylocks=false $PKGS
