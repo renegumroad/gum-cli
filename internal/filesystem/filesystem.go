@@ -20,6 +20,7 @@ type Client interface {
 	HomeDir() (string, error)
 	Exists(path string) bool
 	IsDir(path string) bool
+	IsFile(path string) bool
 	CopyFile(source, destination string) error
 	IsSymlink(path string) bool
 	RootDir() string
@@ -33,6 +34,7 @@ type Client interface {
 	EqualFiles(source, destination string) (bool, error)
 	WriteString(path, content string) error
 	AppendString(path, content string) error
+	MkdirAll(path string) error
 }
 
 type UserInfo struct {
@@ -55,17 +57,29 @@ func newClientWithComponents(sys systeminfo.Client) *client {
 }
 
 func (c *client) CurrentDir() (string, error) {
-	return os.Getwd()
+	dir, err := os.Getwd()
+
+	if err != nil {
+		return "", errors.Errorf("Unable to get current directory: %s", err)
+	}
+
+	return dir, nil
 }
 
 func (c *client) HomeDir() (string, error) {
-	return os.UserHomeDir()
+	dir, err := os.UserHomeDir()
+
+	if err != nil {
+		return "", errors.Errorf("Unable to get home directory: %s", err)
+	}
+
+	return dir, nil
 }
 
 func (c *client) Exists(path string) bool {
 	_, err := os.Stat(path)
 
-	return err == nil
+	return !errors.Is(err, os.ErrNotExist)
 }
 
 func (c *client) IsDir(path string) bool {
@@ -75,6 +89,15 @@ func (c *client) IsDir(path string) bool {
 	}
 
 	return info.IsDir()
+}
+
+func (c *client) IsFile(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+
+	return info.Mode().IsRegular()
 }
 
 func (c *client) CopyFile(source, destination string) error {
@@ -280,4 +303,11 @@ func (c *client) WriteString(path, content string) error {
 
 	_, err = f.WriteString(content)
 	return err
+}
+
+func (c *client) MkdirAll(path string) error {
+	if c.Exists(path) && !c.IsDir(path) {
+		return errors.Errorf("Path %s exists and is not a directory", path)
+	}
+	return os.MkdirAll(path, os.ModePerm)
 }

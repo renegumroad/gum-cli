@@ -303,6 +303,73 @@ func (s *filesystemSuite) TestIsExecutableWithDirectory() {
 	s.Require().True(c.IsExecutable(tmpDir))
 }
 
+func (s *filesystemSuite) TestMkdirAllWithValidPath() {
+	c := New()
+	tempDir, err := c.CreateTempDir()
+	s.Require().NoError(err)
+	defer os.RemoveAll(tempDir)
+
+	targetDir := filepath.Join(tempDir, "testdir")
+	err = c.MkdirAll(targetDir)
+	s.Require().NoError(err)
+
+	_, err = os.Stat(targetDir)
+	s.Require().NoError(err)
+}
+
+func (s *filesystemSuite) TestMkdirAllWithExistingDirectory() {
+	c := New()
+	tempDir, err := c.CreateTempDir()
+	s.Require().NoError(err)
+	defer os.RemoveAll(tempDir)
+
+	existingDir := filepath.Join(tempDir, "existingdir")
+	err = os.Mkdir(existingDir, 0755)
+	s.Require().NoError(err)
+
+	err = c.MkdirAll(existingDir)
+	s.Require().NoError(err)
+
+	_, err = os.Stat(existingDir)
+	s.Require().NoError(err)
+}
+
+func (s *filesystemSuite) TestMkdirAllWithNestedDirectories() {
+	c := New()
+	tempDir, err := c.CreateTempDir()
+	s.Require().NoError(err)
+	defer os.RemoveAll(tempDir)
+
+	nestedDir := filepath.Join(tempDir, "nested", "dir")
+	err = c.MkdirAll(nestedDir)
+	s.Require().NoError(err)
+
+	_, err = os.Stat(nestedDir)
+	s.Require().NoError(err)
+}
+
+func (s *filesystemSuite) TestMkdirAllWithInvalidPath() {
+	c := New()
+	invalidPath := "/\000/invalid"
+
+	err := c.MkdirAll(invalidPath)
+	s.Require().Error(err)
+}
+
+func (s *filesystemSuite) TestMkdirAllWithFileAsPath() {
+	c := New()
+	tempDir, err := c.CreateTempDir()
+	s.Require().NoError(err)
+	defer os.RemoveAll(tempDir)
+
+	filePath := filepath.Join(tempDir, "file")
+	_, err = os.Create(filePath)
+	s.Require().NoError(err)
+
+	err = c.MkdirAll(filePath)
+	s.Require().Error(err)
+}
+
 func TestFileSystemSuite(t *testing.T) {
 	suite.Run(t, new(filesystemSuite))
 }

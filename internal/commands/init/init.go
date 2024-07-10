@@ -7,9 +7,9 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/renegumroad/gum-cli/assets"
+	"github.com/renegumroad/gum-cli/internal/filesystem"
 	"github.com/renegumroad/gum-cli/internal/log"
 	"github.com/renegumroad/gum-cli/internal/shellmanager"
-	"github.com/renegumroad/gum-cli/internal/utils/filesystem"
 	"github.com/renegumroad/gum-cli/internal/utils/systeminfo"
 )
 
@@ -101,7 +101,7 @@ func (cmd *InitImpl) Run() error {
 
 func (cmd *InitImpl) setup() error {
 	if homeDir, err := os.UserHomeDir(); err != nil {
-		return errors.Errorf("Unable to get home directory: %s", err)
+		return err
 	} else {
 		cmd.homeDir = homeDir
 		cmd.gumHomePath = filepath.Join(homeDir, ".gum")
@@ -116,7 +116,7 @@ func (cmd *InitImpl) setup() error {
 func (cmd *InitImpl) createGumHomeDir() error {
 	if !cmd.fs.Exists(cmd.gumHomePath) {
 		log.Debugln("Creating .gum directory in home directory")
-		if err := os.Mkdir(cmd.gumHomePath, os.ModePerm); err != nil {
+		if err := cmd.fs.MkdirAll(cmd.gumHomePath); err != nil {
 			return errors.Errorf("Unable to create .gum directory in home directory: %s", err)
 		}
 	}
@@ -125,18 +125,11 @@ func (cmd *InitImpl) createGumHomeDir() error {
 }
 
 func (cmd *InitImpl) createOptGumroadDirs() error {
-	if !cmd.fs.Exists(cmd.gumroadPath) {
-		log.Debugf("Creating %s directory", cmd.gumroadPath)
-		if err := os.Mkdir(cmd.gumroadPath, os.ModePerm); err != nil {
-			return errors.Errorf("Unable to create %s directory: %s", cmd.gumroadPath, err)
-		}
-	}
-
 	cmd.gumroadBinPath = filepath.Join(cmd.gumroadPath, "bin")
 
 	if !cmd.fs.Exists(cmd.gumroadBinPath) {
 		log.Debugf("Creating %s directory", cmd.gumroadBinPath)
-		if err := os.Mkdir(cmd.gumroadBinPath, os.ModePerm); err != nil {
+		if err := cmd.fs.MkdirAll(cmd.gumroadBinPath); err != nil {
 			return errors.Errorf("Unable to create %s directory: %s", cmd.gumroadBinPath, err)
 		}
 	}
