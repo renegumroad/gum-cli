@@ -31,6 +31,10 @@ tasks:
     cmds:
       - go vet -copylocks=false $PKGS
 
+  lint:
+    cmds:
+      - golangci-lint run
+
   release-check:
     cmds:
       - goreleaser check
