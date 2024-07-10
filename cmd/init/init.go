@@ -1,13 +1,13 @@
 package init
 
 import (
-	"github.com/renehernandez/gum-cli/internal/commands"
+	initImpl "github.com/renehernandez/gum-cli/internal/commands/init"
 	"github.com/renehernandez/gum-cli/internal/utils"
 	"github.com/spf13/cobra"
 )
 
 func Cmd() *cobra.Command {
-	impl := commands.NewInitCmd()
+	impl := initImpl.New()
 
 	cmd := &cobra.Command{
 		Use:   "init",

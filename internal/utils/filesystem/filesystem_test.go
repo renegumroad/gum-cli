@@ -139,7 +139,7 @@ func (s *filesystemSuite) TestGetOwner() {
 	s.Require().Equal(currentUser.Uid, fmt.Sprint(userInfo.Id), "The owner user ID should match the current user ID")
 }
 
-func (s *filesystemSuite) TestChownRecursively() {
+func (s *filesystemSuite) TestChownDirectory() {
 	c := NewClient()
 	tmpDir, err := c.CreateTempDir()
 	s.Require().NoError(err)
@@ -165,23 +165,52 @@ func (s *filesystemSuite) TestChownRecursively() {
 	s.Require().NoError(err)
 
 	// Perform the recursive chown
-	err = c.ChownRecursively(tmpDir, uid, gid)
+	err = c.Chown(tmpDir, uid, gid)
 	s.Require().NoError(err)
 
 	// Verify ownership of the directory and file
-	verifyOwnership := func(name string) {
-		info, err := os.Stat(name)
-		s.Require().NoError(err)
 
-		stat, ok := info.Sys().(*syscall.Stat_t)
-		s.Require().True(ok, "Expected file info to be syscall.Stat_t")
+	s.verifyOwnership(subDir, uid, gid)
+	s.verifyOwnership(tmpFile.Name(), uid, gid)
+}
 
-		s.Equal(uint32(uid), stat.Uid, "UID should match")
-		s.Equal(uint32(gid), stat.Gid, "GID should match")
-	}
+func (s *filesystemSuite) TestChownFile() {
+	c := NewClient()
+	tmpDir, err := c.CreateTempDir()
+	s.Require().NoError(err)
+	defer os.RemoveAll(tmpDir)
 
-	verifyOwnership(subDir)
-	verifyOwnership(tmpFile.Name())
+	// Create a subdirectory and a file inside tmpDir to test recursive chown
+	tempfile := filepath.Join(tmpDir, "testfile.txt")
+	err = c.WriteString(tempfile, "test")
+	s.Require().NoError(err)
+
+	// Get current user ID and group ID for testing
+	currentUser, err := user.Current()
+	s.Require().NoError(err)
+
+	uid, err := strconv.Atoi(currentUser.Uid)
+	s.Require().NoError(err)
+
+	gid, err := strconv.Atoi(currentUser.Gid)
+	s.Require().NoError(err)
+
+	// Perform the recursive chown
+	err = c.Chown(tmpDir, uid, gid)
+	s.Require().NoError(err)
+
+	s.verifyOwnership(tempfile, uid, gid)
+}
+
+func (s *filesystemSuite) verifyOwnership(name string, uid, gid int) {
+	info, err := os.Stat(name)
+	s.Require().NoError(err)
+
+	stat, ok := info.Sys().(*syscall.Stat_t)
+	s.Require().True(ok, "Expected file info to be syscall.Stat_t")
+
+	s.Equal(uint32(uid), stat.Uid, "UID should match")
+	s.Equal(uint32(gid), stat.Gid, "GID should match")
 }
 
 func (s *filesystemSuite) TestAppendStringNewFile() {

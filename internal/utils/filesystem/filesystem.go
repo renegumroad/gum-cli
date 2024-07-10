@@ -16,12 +16,14 @@ import (
 
 type Client interface {
 	CurrentDir() (string, error)
+	HomeDir() (string, error)
 	Exists(path string) bool
+	IsDir(path string) bool
 	CopyFile(source, destination string) error
 	IsSymlink(path string) bool
 	RootDir() string
-	ChownUserRecursively(path string, uid int) error
-	ChownRecursively(path string, uid, gid int) error
+	ChownUser(path string, uid int) error
+	Chown(path string, uid, gid int) error
 	GetOwner(path string) (*userInfo, error)
 	MakeExecutable(path string) error
 	IsExecutable(path string) bool
@@ -50,10 +52,23 @@ func (c *client) CurrentDir() (string, error) {
 	return os.Getwd()
 }
 
+func (c *client) HomeDir() (string, error) {
+	return os.UserHomeDir()
+}
+
 func (c *client) Exists(path string) bool {
 	_, err := os.Stat(path)
 
 	return err == nil
+}
+
+func (c *client) IsDir(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+
+	return info.IsDir()
 }
 
 func (c *client) CopyFile(source, destination string) error {
@@ -109,20 +124,21 @@ func (c *client) RootDir() string {
 	return "/"
 }
 
-func (c *client) ChownUserRecursively(path string, uid int) error {
-	return c.ChownRecursively(path, uid, -1)
+func (c *client) ChownUser(path string, uid int) error {
+	return c.Chown(path, uid, -1)
 }
 
-func (c *client) ChownRecursively(path string, uid, gid int) error {
-	err := filepath.Walk(path, func(name string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
+func (c *client) Chown(path string, uid, gid int) error {
+	if c.IsDir(path) {
+		return filepath.Walk(path, func(name string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
 
-		return os.Chown(name, uid, gid)
-	})
-
-	return err
+			return os.Chown(name, uid, gid)
+		})
+	}
+	return os.Chown(path, uid, gid)
 }
 
 func (c *client) GetOwner(path string) (*userInfo, error) {

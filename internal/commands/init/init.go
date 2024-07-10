@@ -1,14 +1,14 @@
-package commands
+package init
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/renehernandez/gum-cli/assets"
 	"github.com/renehernandez/gum-cli/internal/log"
+	"github.com/renehernandez/gum-cli/internal/shellmanager"
 	"github.com/renehernandez/gum-cli/internal/utils/filesystem"
 	"github.com/renehernandez/gum-cli/internal/utils/systeminfo"
 	"github.com/renehernandez/gum-cli/internal/version"
@@ -22,14 +22,19 @@ type InitImpl struct {
 	gumroadCliPath string
 	fs             filesystem.Client
 	sys            systeminfo.Client
+	shell          shellmanager.Client
 }
 
-func NewInitCmd() *InitImpl {
-	cmd := &InitImpl{
-		fs:  filesystem.NewClient(),
-		sys: systeminfo.NewClient(),
+func New() *InitImpl {
+	return newWithComponents(filesystem.NewClient(), systeminfo.NewClient(), shellmanager.New())
+}
+
+func newWithComponents(fs filesystem.Client, sys systeminfo.Client, shell shellmanager.Client) *InitImpl {
+	return &InitImpl{
+		fs:    fs,
+		sys:   sys,
+		shell: shell,
 	}
-	return cmd
 }
 
 func (cmd *InitImpl) Validate() error {
@@ -57,15 +62,15 @@ func (cmd *InitImpl) Run() error {
 		return err
 	}
 
-	if err := cmd.setOwnership(); err != nil {
-		return err
-	}
-
 	if err := cmd.makeCliExecutable(); err != nil {
 		return err
 	}
 
 	if err := cmd.configureShell(); err != nil {
+		return err
+	}
+
+	if err := cmd.setOwnership(); err != nil {
 		return err
 	}
 
@@ -134,15 +139,32 @@ func (cmd *InitImpl) copyExecutable() error {
 }
 
 func (cmd *InitImpl) setOwnership() error {
-	log.Debugf("Checking if ownership of %s directory needs to be updated", cmd.gumroadPath)
+	log.Debugln("Checking if ownership of gum paths needs to be updated")
 
-	info, err := cmd.fs.GetOwner(cmd.gumroadPath)
+	paths := []string{cmd.gumroadPath, cmd.gumHomePath}
+
+	for shell, _ := range cmd.shell.ProfileByShell() {
+		profilePath := cmd.shell.GetShellProfilePath(shell)
+		paths = append(paths, profilePath)
+	}
+
+	for _, path := range paths {
+		if err := cmd.ensureOwnership(path); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (cmd *InitImpl) ensureOwnership(path string) error {
+	info, err := cmd.fs.GetOwner(path)
 	if err != nil {
 		return err
 	}
 
 	if info.Id != 0 {
-		log.Debugf("Won't update ownership of %s directory since it is not owned by root. Owner: %s", cmd.gumroadPath, info.Name)
+		log.Debugf("Won't update ownership of %s path since it is not owned by root. Owner: %s", path, info.Name)
 		return nil
 	}
 
@@ -150,9 +172,10 @@ func (cmd *InitImpl) setOwnership() error {
 	if err != nil {
 		return err
 	}
-	log.Debugf("Setting ownership of %s directory to %s", cmd.gumroadPath, user.Name)
+	log.Debugf("Setting ownership of %s directory to %s", path, user.Name)
 
-	return cmd.fs.ChownUserRecursively(cmd.gumroadPath, user.Id)
+	return cmd.fs.ChownUser(path, user.Id)
+
 }
 
 func (cmd *InitImpl) makeCliExecutable() error {
@@ -184,33 +207,22 @@ func (cmd *InitImpl) configureShell() error {
 		return errors.Errorf("Unable to write shell_config to %s: %s", shellConfigPath, err)
 	}
 
-	shell := cmd.sys.GetShell()
-
 	sourceShellEntry := fmt.Sprintf("test -f %s && source %s", shellConfigPath, shellConfigPath)
 
-	var profileFileName string
-
-	if shell == systeminfo.ShellZsh {
-		profileFileName = ".zprofile"
-	} else {
-		profileFileName = ".bash_profile"
-	}
-
-	log.Debugf("Checking if shell configuration file %s needs to be updated", profileFileName)
-	profilePath := filepath.Join(cmd.homeDir, profileFileName)
-
-	content, err := os.ReadFile(profilePath)
-	if err != nil {
-		log.Warnf("Unable to read %s file %s: %s. Will create it", profileFileName, profilePath, err)
-	}
-
-	if !strings.Contains(string(content), sourceShellEntry) {
-		log.Debugf("Adding source %s to %s", shellConfigPath, profilePath)
-		if err := cmd.fs.AppendString(profilePath, fmt.Sprintf("\n%s\n", sourceShellEntry)); err != nil {
-			return errors.Errorf("Unable to append %s to %s: %s", shellConfigPath, profilePath, err)
+	for shell, profile := range cmd.shell.ProfileByShell() {
+		found, err := cmd.shell.ProfileContains(shell, sourceShellEntry)
+		if err != nil {
+			return errors.Errorf("Unable to check if %s contains %s: %s", profile, sourceShellEntry, err)
 		}
-	} else {
-		log.Debugf("Shell configuration file %s is already updated", profilePath)
+
+		if !found {
+			log.Debugf("Adding source %s to %s", shellConfigPath, profile)
+			if err := cmd.shell.UpdateShellProfile(shell, sourceShellEntry); err != nil {
+				return errors.Errorf("Unable to update %s with %s: %s", profile, sourceShellEntry, err)
+			}
+		} else {
+			log.Debugf("Shell file %s is already configured", profile)
+		}
 	}
 
 	return nil
