@@ -1,7 +1,2 @@
 up:
-  - brew:
-    - name: go
-    - name: goreleaser
-    - name: golangci-lint
-    - name: go-task
-    - name: mockery
+  - action: golang

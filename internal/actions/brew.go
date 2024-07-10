@@ -8,7 +8,6 @@ import (
 type BrewAction struct {
 	brew     homebrew.Client
 	packages []homebrew.Package
-	helper   *actionHelper
 }
 
 func NewBrewAction(packages []homebrew.Package) Action {
@@ -19,7 +18,6 @@ func newBrewActionWithClient(packages []homebrew.Package, brew homebrew.Client) 
 	return &BrewAction{
 		brew:     brew,
 		packages: packages,
-		helper:   &actionHelper{},
 	}
 }
 
@@ -32,9 +30,6 @@ func (act *BrewAction) Deps() []Action {
 }
 
 func (act *BrewAction) Validate() error {
-	act.helper.logValidationMsg(act)
-	depsError := act.helper.validateDependencies(act.Deps())
-
 	missingNameCount := 0
 	for _, pkg := range act.packages {
 		if pkg.Name == "" {
@@ -49,17 +44,7 @@ func (act *BrewAction) Validate() error {
 		err = errors.Errorf("Failed %s action validation: no packages specified.", act.Name())
 	}
 
-	if depsError != nil {
-		err = errors.Errorf("%s\n%s", err, depsError)
-	}
-
-	if err != nil {
-		act.helper.logValidationErrorMsg(act, err)
-		return err
-	}
-
-	act.helper.logValidationSuccessMsg(act)
-	return nil
+	return err
 }
 
 func (act *BrewAction) Public() bool {
@@ -67,20 +52,12 @@ func (act *BrewAction) Public() bool {
 }
 
 func (act *BrewAction) Run() error {
-	act.helper.logRunMsg(act)
-	if err := act.helper.runDependencies(act.Deps()); err != nil {
-		act.helper.logRunErrorMsg(act, err)
-		return err
-	}
-
 	for _, pkg := range act.packages {
 		err := act.brew.EnsureInstalled(pkg)
 		if err != nil {
-			act.helper.logRunErrorMsg(act, err)
 			return err
 		}
 	}
 
-	act.helper.logRunSuccessMsg(act)
 	return nil
 }
