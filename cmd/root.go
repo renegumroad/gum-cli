@@ -6,6 +6,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/renegumroad/gum-cli/cmd/dev"
 	initCmd "github.com/renegumroad/gum-cli/cmd/init"
 	"github.com/renegumroad/gum-cli/internal/log"
 	"github.com/renegumroad/gum-cli/internal/version"
@@ -31,6 +32,7 @@ func rootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().StringVar(&rootFlags.LogLevel, "log-level", "info", "set log level")
 
 	rootCmd.AddCommand(initCmd.Cmd())
+	rootCmd.AddCommand(dev.Cmd())
 
 	return rootCmd
 }
