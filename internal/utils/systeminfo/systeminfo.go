@@ -13,6 +13,8 @@ type Client interface {
 	IsLinux() bool
 	IsMacOS() bool
 	GetSudoOriginalUser() (*UserInfo, error)
+	IsSudo() bool
+	GetSudoUsername() string
 }
 
 type client struct {
@@ -58,12 +60,11 @@ func (c *client) GetSudoUsername() string {
 }
 
 func (c *client) GetSudoOriginalUser() (*UserInfo, error) {
-	sudoUsername := c.GetSudoUsername()
-
-	if sudoUsername == "" {
+	if !c.IsSudo() {
 		return nil, errors.Errorf("Not running with sudo or SUDO_USER is not set")
 	}
 
+	sudoUsername := c.GetSudoUsername()
 	info := &UserInfo{}
 	originalUser, err := c.user.Lookup(sudoUsername)
 	if err != nil {

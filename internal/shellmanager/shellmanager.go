@@ -71,6 +71,14 @@ func (c *client) UpdateShellProfile(shell ShellType, entry string) error {
 		return err
 	}
 
+	if !strings.HasPrefix(entry, "\n") {
+		entry = "\n" + entry
+	}
+
+	if !strings.HasSuffix(entry, "\n") {
+		entry = entry + "\n"
+	}
+
 	if err := c.fs.AppendString(profilePath, entry); err != nil {
 		return err
 	}

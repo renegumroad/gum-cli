@@ -11,7 +11,6 @@ import (
 	"github.com/renehernandez/gum-cli/internal/shellmanager"
 	"github.com/renehernandez/gum-cli/internal/utils/filesystem"
 	"github.com/renehernandez/gum-cli/internal/utils/systeminfo"
-	"github.com/renehernandez/gum-cli/internal/version"
 )
 
 type InitImpl struct {
@@ -38,18 +37,40 @@ func newWithComponents(fs filesystem.Client, sys systeminfo.Client, shell shellm
 }
 
 func (cmd *InitImpl) Validate() error {
-	if !cmd.fs.Exists(cmd.gumroadPath) && version.IsRelease() && os.Getuid() != 0 {
-		return errors.Errorf("Please re-run gum init with sudo (sudo gum init) to create the necessary directories (/opt/gumroad, /opt/gumroad/bin)")
+	if err := cmd.setup(); err != nil {
+		return err
+	}
+
+	if !cmd.fs.Exists(cmd.gumroadPath) {
+		if !cmd.sys.IsSudo() {
+			return errors.Errorf("Please re-run gum init with sudo (sudo gum init) to create the necessary directories (/opt/gumroad, /opt/gumroad/bin)")
+		}
+	} else {
+		info, err := cmd.fs.GetOwner(cmd.gumroadPath)
+		if err != nil {
+			return errors.Errorf("Unable to get owner of %s: %s", cmd.gumroadPath, err)
+		}
+
+		if info.Id == 0 && !cmd.sys.IsSudo() {
+			return errors.Errorf("Please re-run gum init with sudo (sudo gum init) to set the user ownership of %s", cmd.gumroadPath)
+		}
+	}
+
+	if cmd.fs.Exists(cmd.gumHomePath) {
+		info, err := cmd.fs.GetOwner(cmd.gumHomePath)
+		if err != nil {
+			return errors.Errorf("Unable to get owner of %s: %s", cmd.gumHomePath, err)
+		}
+
+		if info.Id == 0 && !cmd.sys.IsSudo() {
+			return errors.Errorf("Please re-run gum init with sudo (sudo gum init) to set the user ownership of %s", cmd.gumHomePath)
+		}
 	}
 
 	return nil
 }
 
 func (cmd *InitImpl) Run() error {
-	if err := cmd.setup(); err != nil {
-		return err
-	}
-
 	if err := cmd.createGumHomeDir(); err != nil {
 		return err
 	}
