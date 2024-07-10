@@ -1,14 +1,14 @@
 package shellmanager
 
 import (
+	"os"
 	"testing"
 
 	"github.com/renehernandez/gum-cli/internal/utils/filesystem"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
-type shellmanagerSuite struct {
+type shellManagerSuite struct {
 	suite.Suite
 }
 
@@ -20,7 +20,15 @@ func (m *fakeFileSystem) HomeDir() (string, error) {
 	return "/home/testuser", nil
 }
 
-func (s *shellmanagerSuite) TestGetShellProfilePath() {
+type invalidHomeDirFileSystem struct {
+	filesystem.Client
+}
+
+func (m *invalidHomeDirFileSystem) HomeDir() (string, error) {
+	return "", os.ErrNotExist
+}
+
+func (s *shellManagerSuite) TestGetShellProfilePath() {
 	tests := []struct {
 		name         string
 		shell        ShellType
@@ -46,30 +54,21 @@ func (s *shellmanagerSuite) TestGetShellProfilePath() {
 	for _, t := range tests {
 		s.Run(t.name, func() {
 			client := newWithComponents(&fakeFileSystem{})
-			actualPath := client.GetShellProfilePath(t.shell)
-			assert.Equal(s.T(), t.expectedPath, actualPath)
+			actualPath, err := client.GetShellProfilePath(t.shell)
+			s.Require().NoError(err)
+			s.Require().Equal(t.expectedPath, actualPath)
 		})
 
 	}
 }
 
-// func TestGetShellProfilePathForSh() {
-// 	mockFS := new(MockFileSystem)
-// 	mockFS.On("UserHomeDir").Return("/home/testuser", nil)
-// 	client := newWithComponents(mockFS)
-// 	expectedPath := "/home/testuser/.profile"
-// 	actualPath := client.GetShellProfilePath(ShellSh)
-// 	assert.Equal(t, expectedPath, actualPath)
-// }
-
-// func TestGetShellProfilePathWithUserHomeDirError() {
-// 	mockFS := new(MockFileSystem)
-// 	mockFS.On("UserHomeDir").Return("", os.ErrNotExist)
-// 	client := newWithComponents(mockFS)
-// 	actualPath := client.GetShellProfilePath(ShellZsh)
-// 	assert.Equal(t, "", actualPath)
-// }
+func (s *shellManagerSuite) TestGetShellProfilePathWithUserHomeDirError() {
+	client := newWithComponents(&invalidHomeDirFileSystem{})
+	actualPath, err := client.GetShellProfilePath(ShellZsh)
+	s.Require().Error(err)
+	s.Require().Empty(actualPath)
+}
 
 func TestShellManagerSuite(t *testing.T) {
-	suite.Run(t, new(shellmanagerSuite))
+	suite.Run(t, new(shellManagerSuite))
 }

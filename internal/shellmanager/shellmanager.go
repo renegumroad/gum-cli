@@ -18,8 +18,8 @@ var (
 
 type Client interface {
 	GetShell() string
-	GetShellProfilePath(shell ShellType) string
 	ProfileByShell() map[ShellType]string
+	GetShellProfilePath(shell ShellType) (string, error)
 	ProfileContains(shell ShellType, entry string) (bool, error)
 	UpdateShellProfile(shell ShellType, entry string) error
 }
@@ -29,7 +29,7 @@ type client struct {
 }
 
 func New() Client {
-	return newWithComponents(filesystem.NewClient())
+	return newWithComponents(filesystem.New())
 }
 
 func newWithComponents(fs filesystem.Client) Client {
@@ -54,19 +54,22 @@ func (c *client) ProfileByShell() map[ShellType]string {
 	}
 }
 
-func (c *client) GetShellProfilePath(shell ShellType) string {
+func (c *client) GetShellProfilePath(shell ShellType) (string, error) {
 	profile := c.ProfileByShell()[shell]
 
 	homeDir, err := c.fs.HomeDir()
 	if err != nil {
-		return ""
+		return "", err
 	}
 
-	return filepath.Join(homeDir, profile)
+	return filepath.Join(homeDir, profile), nil
 }
 
 func (c *client) UpdateShellProfile(shell ShellType, entry string) error {
-	profilePath := c.GetShellProfilePath(shell)
+	profilePath, err := c.GetShellProfilePath(shell)
+	if err != nil {
+		return err
+	}
 
 	if err := c.fs.AppendString(profilePath, entry); err != nil {
 		return err
@@ -76,7 +79,10 @@ func (c *client) UpdateShellProfile(shell ShellType, entry string) error {
 }
 
 func (c *client) ProfileContains(shell ShellType, entry string) (bool, error) {
-	profilePath := c.GetShellProfilePath(shell)
+	profilePath, err := c.GetShellProfilePath(shell)
+	if err != nil {
+		return false, err
+	}
 
 	content, err := os.ReadFile(profilePath)
 	if err != nil {

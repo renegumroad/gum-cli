@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/pkg/errors"
+	"github.com/renehernandez/gum-cli/internal/log"
 	"github.com/renehernandez/gum-cli/internal/utils/systeminfo"
 )
 
@@ -24,7 +25,8 @@ type Client interface {
 	RootDir() string
 	ChownUser(path string, uid int) error
 	Chown(path string, uid, gid int) error
-	GetOwner(path string) (*userInfo, error)
+	GetOwner(path string) (*UserInfo, error)
+	EnsureNonSudoOwnership(path string) error
 	MakeExecutable(path string) error
 	IsExecutable(path string) bool
 	CreateTempDir() (string, error)
@@ -33,7 +35,7 @@ type Client interface {
 	AppendString(path, content string) error
 }
 
-type userInfo struct {
+type UserInfo struct {
 	Id   int
 	Name string
 }
@@ -42,9 +44,13 @@ type client struct {
 	sys systeminfo.Client
 }
 
-func NewClient() Client {
+func New() Client {
+	return newClientWithComponents(systeminfo.New())
+}
+
+func newClientWithComponents(sys systeminfo.Client) *client {
 	return &client{
-		sys: systeminfo.NewClient(),
+		sys: sys,
 	}
 }
 
@@ -141,7 +147,7 @@ func (c *client) Chown(path string, uid, gid int) error {
 	return os.Chown(path, uid, gid)
 }
 
-func (c *client) GetOwner(path string) (*userInfo, error) {
+func (c *client) GetOwner(path string) (*UserInfo, error) {
 	info, err := os.Stat(path)
 	if err != nil {
 		return nil, err
@@ -159,7 +165,7 @@ func (c *client) GetOwner(path string) (*userInfo, error) {
 		return nil, err
 	}
 
-	userInfo := &userInfo{}
+	userInfo := &UserInfo{}
 
 	userInfo.Name = owner.Username
 	if userId, err := strconv.Atoi(owner.Uid); err != nil {
@@ -169,6 +175,26 @@ func (c *client) GetOwner(path string) (*userInfo, error) {
 	}
 
 	return userInfo, nil
+}
+
+func (c *client) EnsureNonSudoOwnership(path string) error {
+	info, err := c.GetOwner(path)
+	if err != nil {
+		return errors.Errorf("Error getting %s owner information: %s", path, err)
+	}
+
+	if info.Id != 0 {
+		log.Debugf("Won't update ownership of %s path since it is not owned by root. Owner: %s", path, info.Name)
+		return nil
+	}
+
+	user, err := c.sys.GetSudoOriginalUser()
+	if err != nil {
+		return err
+	}
+	log.Debugf("Setting ownership of %s directory to %s", path, user.Name)
+
+	return c.ChownUser(path, user.Id)
 }
 
 func (c *client) IsExecutable(path string) bool {

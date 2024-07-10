@@ -9,12 +9,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-
-
 type Client interface {
 	IsLinux() bool
 	IsMacOS() bool
-	GetSudoOriginalUser() (*userInfo, error)
+	GetSudoOriginalUser() (*UserInfo, error)
 }
 
 type client struct {
@@ -28,12 +26,12 @@ type userHandler interface {
 type userImpl struct {
 }
 
-type userInfo struct {
+type UserInfo struct {
 	Id   int
 	Name string
 }
 
-func NewClient() Client {
+func New() Client {
 	return newClientWithComponents(newUserHandler())
 }
 
@@ -51,13 +49,22 @@ func (c *client) IsMacOS() bool {
 	return runtime.GOOS == "darwin"
 }
 
-func (c *client) GetSudoOriginalUser() (*userInfo, error) {
-	sudoUsername := os.Getenv("SUDO_USER")
+func (c *client) IsSudo() bool {
+	return os.Getenv("SUDO_USER") != ""
+}
+
+func (c *client) GetSudoUsername() string {
+	return os.Getenv("SUDO_USER")
+}
+
+func (c *client) GetSudoOriginalUser() (*UserInfo, error) {
+	sudoUsername := c.GetSudoUsername()
+
 	if sudoUsername == "" {
 		return nil, errors.Errorf("Not running with sudo or SUDO_USER is not set")
 	}
 
-	info := &userInfo{}
+	info := &UserInfo{}
 	originalUser, err := c.user.Lookup(sudoUsername)
 	if err != nil {
 		return nil, errors.Errorf("Unable to get information about user %s: %s", sudoUsername, err)

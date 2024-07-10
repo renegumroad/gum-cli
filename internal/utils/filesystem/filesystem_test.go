@@ -17,7 +17,7 @@ type filesystemSuite struct {
 }
 
 func (s *filesystemSuite) TestCurrentDir() {
-	c := NewClient()
+	c := New()
 	path, err := c.CurrentDir()
 
 	s.Require().NoError(err)
@@ -25,7 +25,7 @@ func (s *filesystemSuite) TestCurrentDir() {
 }
 
 func (s *filesystemSuite) TestExists() {
-	c := NewClient()
+	c := New()
 	path, _ := c.CurrentDir()
 
 	path = filepath.Join(path, "filesystem.go")
@@ -34,7 +34,7 @@ func (s *filesystemSuite) TestExists() {
 }
 
 func (s *filesystemSuite) TestCreateTempDir() {
-	c := NewClient()
+	c := New()
 	tempDir, err := c.CreateTempDir()
 
 	s.Require().NoError(err, "Expected no error on creating a temp dir")
@@ -48,7 +48,7 @@ func (s *filesystemSuite) TestCreateTempDir() {
 }
 
 func (s *filesystemSuite) TestCopyFile() {
-	c := NewClient()
+	c := New()
 	path, _ := c.CurrentDir()
 
 	dir, err := c.CreateTempDir()
@@ -68,7 +68,7 @@ func (s *filesystemSuite) TestCopyFile() {
 }
 
 func (s *filesystemSuite) TestIsSymlink() {
-	c := NewClient()
+	c := New()
 	tempDir, err := c.CreateTempDir()
 	s.Require().NoError(err, "Expected no error on creating a temp dir")
 	defer os.RemoveAll(tempDir)
@@ -88,7 +88,7 @@ func (s *filesystemSuite) TestIsSymlink() {
 }
 
 func (s *filesystemSuite) TestWriteString() {
-	c := NewClient()
+	c := New()
 	tmpDir, err := c.CreateTempDir()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
@@ -116,7 +116,7 @@ func (s *filesystemSuite) TestWriteString() {
 }
 
 func (s *filesystemSuite) TestGetOwner() {
-	c := NewClient()
+	c := New()
 	tmpDir, err := c.CreateTempDir()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
@@ -140,7 +140,7 @@ func (s *filesystemSuite) TestGetOwner() {
 }
 
 func (s *filesystemSuite) TestChownDirectory() {
-	c := NewClient()
+	c := New()
 	tmpDir, err := c.CreateTempDir()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
@@ -175,7 +175,7 @@ func (s *filesystemSuite) TestChownDirectory() {
 }
 
 func (s *filesystemSuite) TestChownFile() {
-	c := NewClient()
+	c := New()
 	tmpDir, err := c.CreateTempDir()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
@@ -214,7 +214,7 @@ func (s *filesystemSuite) verifyOwnership(name string, uid, gid int) {
 }
 
 func (s *filesystemSuite) TestAppendStringNewFile() {
-	c := NewClient()
+	c := New()
 	tmpDir, err := c.CreateTempDir()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
@@ -231,7 +231,7 @@ func (s *filesystemSuite) TestAppendStringNewFile() {
 }
 
 func (s *filesystemSuite) TestAppendStringExistingFile() {
-	c := NewClient()
+	c := New()
 	tmpDir, err := c.CreateTempDir()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
@@ -255,14 +255,14 @@ func (s *filesystemSuite) TestAppendStringExistingFile() {
 }
 
 func (s *filesystemSuite) TestAppendStringErrorOnInvalidPath() {
-	c := NewClient()
+	c := New()
 	invalidPath := "/invalid/path/to/file.txt"
 	err := c.AppendString(invalidPath, "Some content")
 	s.Require().Error(err, "Expected an error on appending to a file with an invalid path")
 }
 
 func (s *filesystemSuite) TestIsExecutableWithExecutableFile() {
-	c := NewClient()
+	c := New()
 	tmpDir, err := c.CreateTempDir()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
@@ -275,7 +275,7 @@ func (s *filesystemSuite) TestIsExecutableWithExecutableFile() {
 }
 
 func (s *filesystemSuite) TestIsExecutableWithNonExecutableFile() {
-	c := NewClient()
+	c := New()
 	tmpDir, err := c.CreateTempDir()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)
@@ -288,14 +288,14 @@ func (s *filesystemSuite) TestIsExecutableWithNonExecutableFile() {
 }
 
 func (s *filesystemSuite) TestIsExecutableWithNonExistingFile() {
-	c := NewClient()
+	c := New()
 	filePath := "/path/to/non/existing/file"
 
 	s.Require().False(c.IsExecutable(filePath))
 }
 
 func (s *filesystemSuite) TestIsExecutableWithDirectory() {
-	c := NewClient()
+	c := New()
 	tmpDir, err := c.CreateTempDir()
 	s.Require().NoError(err)
 	defer os.RemoveAll(tmpDir)

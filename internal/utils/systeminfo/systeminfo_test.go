@@ -52,7 +52,7 @@ func (s *systeminfoSuite) TestGetSudoOriginalUserWithoutSudo() {
 	// Ensure SUDO_USER environment variable is not set
 	os.Unsetenv("SUDO_USER")
 
-	client := NewClient()
+	client := New()
 	userInfo, err := client.GetSudoOriginalUser()
 
 	s.Require().Error(err)

@@ -26,7 +26,7 @@ type InitImpl struct {
 }
 
 func New() *InitImpl {
-	return newWithComponents(filesystem.NewClient(), systeminfo.NewClient(), shellmanager.New())
+	return newWithComponents(filesystem.New(), systeminfo.New(), shellmanager.New())
 }
 
 func newWithComponents(fs filesystem.Client, sys systeminfo.Client, shell shellmanager.Client) *InitImpl {
@@ -144,38 +144,20 @@ func (cmd *InitImpl) setOwnership() error {
 	paths := []string{cmd.gumroadPath, cmd.gumHomePath}
 
 	for shell, _ := range cmd.shell.ProfileByShell() {
-		profilePath := cmd.shell.GetShellProfilePath(shell)
+		profilePath, err := cmd.shell.GetShellProfilePath(shell)
+		if err != nil {
+			return errors.Errorf("Unable to get shell profile path: %s", err)
+		}
 		paths = append(paths, profilePath)
 	}
 
 	for _, path := range paths {
-		if err := cmd.ensureOwnership(path); err != nil {
+		if err := cmd.fs.EnsureNonSudoOwnership(path); err != nil {
 			return err
 		}
 	}
 
 	return nil
-}
-
-func (cmd *InitImpl) ensureOwnership(path string) error {
-	info, err := cmd.fs.GetOwner(path)
-	if err != nil {
-		return err
-	}
-
-	if info.Id != 0 {
-		log.Debugf("Won't update ownership of %s path since it is not owned by root. Owner: %s", path, info.Name)
-		return nil
-	}
-
-	user, err := cmd.sys.GetSudoOriginalUser()
-	if err != nil {
-		return err
-	}
-	log.Debugf("Setting ownership of %s directory to %s", path, user.Name)
-
-	return cmd.fs.ChownUser(path, user.Id)
-
 }
 
 func (cmd *InitImpl) makeCliExecutable() error {
