@@ -204,6 +204,52 @@ func (_c *MockClient_Link_Call) RunAndReturn(run func(homebrew.Package) error) *
 	return _c
 }
 
+// Upgrade provides a mock function with given fields: pkg
+func (_m *MockClient) Upgrade(pkg homebrew.Package) error {
+	ret := _m.Called(pkg)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Upgrade")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(homebrew.Package) error); ok {
+		r0 = rf(pkg)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockClient_Upgrade_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Upgrade'
+type MockClient_Upgrade_Call struct {
+	*mock.Call
+}
+
+// Upgrade is a helper method to define mock.On call
+//   - pkg homebrew.Package
+func (_e *MockClient_Expecter) Upgrade(pkg interface{}) *MockClient_Upgrade_Call {
+	return &MockClient_Upgrade_Call{Call: _e.mock.On("Upgrade", pkg)}
+}
+
+func (_c *MockClient_Upgrade_Call) Run(run func(pkg homebrew.Package)) *MockClient_Upgrade_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(homebrew.Package))
+	})
+	return _c
+}
+
+func (_c *MockClient_Upgrade_Call) Return(_a0 error) *MockClient_Upgrade_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockClient_Upgrade_Call) RunAndReturn(run func(homebrew.Package) error) *MockClient_Upgrade_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewMockClient creates a new instance of MockClient. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockClient(t interface {

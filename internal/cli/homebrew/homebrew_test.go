@@ -30,7 +30,7 @@ func (s *brewSuite) SetupSuite() {
 
 func (s *brewSuite) SetupTest() {
 	s.mockFs = mockfilesystem.NewMockClient(s.T())
-	s.client = newClientWithComponents(s.mockFs, cmdexec.NewCommandGenerator())
+	s.client = newClientWithComponents(s.mockFs, cmdexec.NewEnvCommandGenerator())
 
 	s.origBrewPrefix = os.Getenv("HOMEBREW_PREFIX")
 
@@ -89,7 +89,7 @@ func (s *brewSuite) TestIsInstalledCaskFalse() {
 func (s *brewSuite) TestInstall() {
 	pkg := Package{Name: "testpkg"}
 	noOpCmd := fakecmdexec.NewNoOpCommand()
-	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewCmdGenerator(noOpCmd))
+	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewEnvCmdGenerator(noOpCmd))
 
 	err := s.client.Install(pkg)
 	s.Require().NoError(err)
@@ -101,7 +101,7 @@ func (s *brewSuite) TestInstall() {
 func (s *brewSuite) TestInstallCask() {
 	pkg := Package{Name: "testpkg", Cask: true}
 	noOpCmd := fakecmdexec.NewNoOpCommand()
-	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewCmdGenerator(noOpCmd))
+	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewEnvCmdGenerator(noOpCmd))
 
 	err := s.client.Install(pkg)
 	s.Require().NoError(err)
@@ -113,7 +113,7 @@ func (s *brewSuite) TestInstallCask() {
 func (s *brewSuite) TestLink() {
 	pkg := Package{Name: "testpkg", Link: true}
 	noOpCmd := fakecmdexec.NewNoOpCommand()
-	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewCmdGenerator(noOpCmd))
+	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewEnvCmdGenerator(noOpCmd))
 
 	err := s.client.Link(pkg)
 	s.Require().NoError(err)
@@ -125,7 +125,7 @@ func (s *brewSuite) TestLink() {
 func (s *brewSuite) TestLinkWhenNoName() {
 	pkg := Package{Name: "", Link: true}
 	noOpCmd := fakecmdexec.NewNoOpCommand()
-	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewCmdGenerator(noOpCmd))
+	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewEnvCmdGenerator(noOpCmd))
 
 	err := s.client.Link(pkg)
 
@@ -137,7 +137,7 @@ func (s *brewSuite) TestLinkWhenNoName() {
 func (s *brewSuite) TestLinkCask() {
 	pkg := Package{Name: "testpkg", Cask: true, Link: true}
 	noOpCmd := fakecmdexec.NewNoOpCommand()
-	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewCmdGenerator(noOpCmd))
+	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewEnvCmdGenerator(noOpCmd))
 
 	err := s.client.Link(pkg)
 
@@ -150,7 +150,7 @@ func (s *brewSuite) TestLinkCask() {
 func (s *brewSuite) TestLinkNotLink() {
 	pkg := Package{Name: "testpkg"}
 	noOpCmd := fakecmdexec.NewNoOpCommand()
-	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewCmdGenerator(noOpCmd))
+	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewEnvCmdGenerator(noOpCmd))
 
 	err := s.client.Link(pkg)
 	s.Require().NoError(err)
@@ -163,7 +163,7 @@ func (s *brewSuite) TestEnsureInstalledAlreadyInstalled() {
 	s.mockFs.EXPECT().Exists(filepath.Join(s.pkgPath, pkg.Name)).Return(true)
 
 	noOpCmd := fakecmdexec.NewNoOpCommand()
-	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewCmdGenerator(noOpCmd))
+	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewEnvCmdGenerator(noOpCmd))
 
 	err := s.client.EnsureInstalled(pkg)
 	s.Require().NoError(err)
@@ -176,11 +176,47 @@ func (s *brewSuite) TestEnsureInstalledNotInstalled() {
 	s.mockFs.EXPECT().Exists(filepath.Join(s.pkgPath, pkg.Name)).Return(false)
 
 	noOpCmd := fakecmdexec.NewNoOpCommand()
-	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewCmdGenerator(noOpCmd))
+	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewEnvCmdGenerator(noOpCmd))
 	err := s.client.EnsureInstalled(pkg)
 	s.Require().NoError(err)
 	s.Require().Equal("brew", noOpCmd.Cmd())
 	s.Require().Equal([]string{"install", "testpkg"}, noOpCmd.Args())
+}
+
+func (s *brewSuite) TestUpgrade() {
+	pkg := Package{Name: "testpkg"}
+	noOpCmd := fakecmdexec.NewNoOpCommand()
+	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewEnvCmdGenerator(noOpCmd))
+
+	err := s.client.Upgrade(pkg)
+	s.Require().NoError(err)
+
+	s.Require().Equal("brew", noOpCmd.Cmd())
+	s.Require().Equal([]string{"upgrade", "testpkg"}, noOpCmd.Args())
+}
+
+func (s *brewSuite) TestUpgradeCask() {
+	pkg := Package{Name: "testpkg", Cask: true}
+	noOpCmd := fakecmdexec.NewNoOpCommand()
+	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewEnvCmdGenerator(noOpCmd))
+
+	err := s.client.Upgrade(pkg)
+	s.Require().NoError(err)
+
+	s.Require().Equal("brew", noOpCmd.Cmd())
+	s.Require().Equal([]string{"upgrade", "--cask", "testpkg"}, noOpCmd.Args())
+}
+
+func (s *brewSuite) TestUpgradeMissingName() {
+	pkg := Package{Name: ""}
+	noOpCmd := fakecmdexec.NewNoOpCommand()
+	s.client = newClientWithComponents(s.mockFs, fakecmdexec.NewEnvCmdGenerator(noOpCmd))
+
+	err := s.client.Upgrade(pkg)
+
+	s.Require().Error(err)
+	s.Require().Equal("", noOpCmd.Cmd())
+	s.Require().Equal([]string{}, noOpCmd.Args())
 }
 
 func TestBrewSuite(t *testing.T) {
