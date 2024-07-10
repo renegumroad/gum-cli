@@ -10,6 +10,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+type LogLevel = string
+
 var (
 	writer      zerolog.ConsoleWriter
 	initialized = false
@@ -18,13 +20,20 @@ var (
 	red    = color.New(color.FgRed, color.Bold)
 	green  = color.New(color.FgGreen, color.Bold)
 	yellow = color.New(color.FgYellow, color.Bold)
+
+	LogDisabled LogLevel = "disabled"
+	LogDebug    LogLevel = "debug"
+	LogInfo     LogLevel = "info"
+	LogWarn     LogLevel = "warn"
+	LogError    LogLevel = "error"
+	LogFatal    LogLevel = "fatal"
 )
 
 func IsInitialized() bool {
 	return initialized
 }
 
-func Initialize(level string) error {
+func Initialize(level LogLevel) error {
 	writer = zerolog.ConsoleWriter{Out: os.Stdout}
 
 	writer.FormatLevel = func(i interface{}) string {
@@ -62,8 +71,10 @@ func prefix(c *color.Color, msg string) string {
 	return c.SprintfFunc()(msg + ":")
 }
 
-func SetLogLevel(level string) error {
+func SetLogLevel(level LogLevel) error {
 	switch level {
+	case "disabled":
+		zerolog.SetGlobalLevel(zerolog.Disabled)
 	case "debug":
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	case "info":

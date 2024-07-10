@@ -145,7 +145,7 @@ func (cmd *InitImpl) copyExecutable() error {
 		if execPath, err := os.Executable(); err != nil {
 			return errors.Errorf("Unable to get current executable path: %s", err)
 		} else {
-			cmd.fs.CopyFile(execPath, cliPath)
+			return cmd.fs.CopyFile(execPath, cliPath)
 		}
 	}
 
@@ -157,7 +157,7 @@ func (cmd *InitImpl) setOwnership() error {
 
 	paths := []string{cmd.gumroadPath, cmd.gumHomePath}
 
-	for shell, _ := range cmd.shell.ProfileByShell() {
+	for shell := range cmd.shell.ProfileByShell() {
 		profilePath, err := cmd.shell.GetShellProfilePath(shell)
 		if err != nil {
 			return errors.Errorf("Unable to get shell profile path: %s", err)
