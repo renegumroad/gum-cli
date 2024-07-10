@@ -83,10 +83,10 @@ func (cmd *InitImpl) createGumHomeDir() error {
 }
 
 func (cmd *InitImpl) createOptGumroadDirs() error {
-	// if !version.IsRelease() {
-	// 	log.Debugln("Skipping creating /opt/gumroad directories since this is not a release version")
-	// 	return nil
-	// }
+	if !version.IsRelease() {
+		log.Debugln("Skip creating /opt/gumroad directories since this is not a release version")
+		return nil
+	}
 
 	if !cmd.fs.Exists(cmd.gumroadPath) {
 		log.Debugf("Creating %s directory", cmd.gumroadPath)
@@ -108,10 +108,10 @@ func (cmd *InitImpl) createOptGumroadDirs() error {
 }
 
 func (cmd *InitImpl) copyExecutable() error {
-	// if !version.IsRelease() {
-	// 	log.Debugln("Skipping copying gum binary to gumroad bin directory since this is not a release version")
-	// 	return nil
-	// }
+	if !version.IsRelease() {
+		log.Debugln("Skip copying gum binary to gumroad bin directory since this is not a release version")
+		return nil
+	}
 
 	cliPath := filepath.Join(cmd.gumroadBinPath, "gum")
 
@@ -128,10 +128,12 @@ func (cmd *InitImpl) copyExecutable() error {
 }
 
 func (cmd *InitImpl) setOwnership() error {
-	// if !version.IsRelease() {
-	// 	log.Debugln("Skipping ownership change since this is not a release version")
-	// 	return nil
-	// }
+	if !version.IsRelease() {
+		log.Debugln("Skip ownership change since this is not a release version")
+		return nil
+	}
+
+	log.Debugf("Checking if ownership of %s directory needs to be updated", cmd.gumroadPath)
 
 	info, err := cmd.fs.GetOwner(cmd.gumroadPath)
 	if err != nil {
@@ -139,7 +141,7 @@ func (cmd *InitImpl) setOwnership() error {
 	}
 
 	if info.Id != 0 {
-		log.Debugf("Won't update ownership recursively of %s directory since it is not owned by root. Owner: %s", cmd.gumroadPath, info.Name)
+		log.Debugf("Won't update ownership of %s directory since it is not owned by root. Owner: %s", cmd.gumroadPath, info.Name)
 		return nil
 	}
 
@@ -147,16 +149,16 @@ func (cmd *InitImpl) setOwnership() error {
 	if err != nil {
 		return err
 	}
-	log.Debugf("Setting recursive ownership of %s directory to %s", cmd.gumroadPath, user.Name)
+	log.Debugf("Setting ownership of %s directory to %s", cmd.gumroadPath, user.Name)
 
 	return cmd.fs.ChownUserRecursively(cmd.gumroadPath, user.Id)
 }
 
 func (cmd *InitImpl) makeCliExecutable() error {
-	// if !version.IsRelease() {
-	// 	log.Debugln("Skipping making gum executable at %s since this is not a release version", cmd.gumroadCliPath)
-	// 	return nil
-	// }
+	if !version.IsRelease() {
+		log.Debugf("Skip making gum executable at %s since this is not a release version", cmd.gumroadCliPath)
+		return nil
+	}
 
 	if !cmd.fs.Exists(cmd.gumroadCliPath) {
 		return errors.Errorf("gum binary does not exist at %s", cmd.gumroadCliPath)
