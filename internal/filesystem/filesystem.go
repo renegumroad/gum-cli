@@ -35,7 +35,7 @@ type Client interface {
 	WriteString(path, content string) error
 	AppendString(path, content string) error
 	MkdirAll(path string) error
-  ReadString(path string) (string, error)
+	ReadString(path string) (string, error)
 }
 
 type UserInfo struct {
