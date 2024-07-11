@@ -38,7 +38,7 @@ func newClientWithComponents(
 
 func (c *client) EnsureRubyInstalled() error {
 	if c.IsRubyInstalled() {
-		log.Infof("ruby version is already installed")
+		log.Infof("Ruby version is already installed")
 		return nil
 	}
 

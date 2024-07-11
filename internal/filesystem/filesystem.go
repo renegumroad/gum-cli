@@ -35,6 +35,7 @@ type Client interface {
 	WriteString(path, content string) error
 	AppendString(path, content string) error
 	MkdirAll(path string) error
+	ReadString(path string) (string, error)
 }
 
 type UserInfo struct {
@@ -310,4 +311,13 @@ func (c *client) MkdirAll(path string) error {
 		return errors.Errorf("Path %s exists and is not a directory", path)
 	}
 	return os.MkdirAll(path, os.ModePerm)
+}
+
+func (c *client) ReadString(path string) (string, error) {
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+
+	return string(content), nil
 }

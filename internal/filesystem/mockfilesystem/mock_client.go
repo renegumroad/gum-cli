@@ -857,6 +857,62 @@ func (_c *MockClient_MkdirTemp_Call) RunAndReturn(run func() (string, error)) *M
 	return _c
 }
 
+// ReadString provides a mock function with given fields: path
+func (_m *MockClient) ReadString(path string) (string, error) {
+	ret := _m.Called(path)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ReadString")
+	}
+
+	var r0 string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string) (string, error)); ok {
+		return rf(path)
+	}
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(path)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(path)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockClient_ReadString_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ReadString'
+type MockClient_ReadString_Call struct {
+	*mock.Call
+}
+
+// ReadString is a helper method to define mock.On call
+//   - path string
+func (_e *MockClient_Expecter) ReadString(path interface{}) *MockClient_ReadString_Call {
+	return &MockClient_ReadString_Call{Call: _e.mock.On("ReadString", path)}
+}
+
+func (_c *MockClient_ReadString_Call) Run(run func(path string)) *MockClient_ReadString_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string))
+	})
+	return _c
+}
+
+func (_c *MockClient_ReadString_Call) Return(_a0 string, _a1 error) *MockClient_ReadString_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockClient_ReadString_Call) RunAndReturn(run func(string) (string, error)) *MockClient_ReadString_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // RootDir provides a mock function with given fields:
 func (_m *MockClient) RootDir() string {
 	ret := _m.Called()
