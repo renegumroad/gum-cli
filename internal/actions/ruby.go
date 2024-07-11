@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"github.com/renegumroad/gum-cli/internal/cli/bundler"
 	"github.com/renegumroad/gum-cli/internal/cli/homebrew"
 	"github.com/renegumroad/gum-cli/internal/cli/rbenv"
 	"github.com/renegumroad/gum-cli/internal/systeminfo"
@@ -43,11 +44,25 @@ func (a *RubyAction) Validate() error {
 }
 
 func (a *RubyAction) ShouldRun() bool {
-	return depsShouldRun(a.Deps())
+	return true
 }
 
 func (a *RubyAction) Run() error {
-	client := rbenv.New()
+	rbClient := rbenv.New()
 
-	return client.EnsureRubyInstalled()
+	if err := rbClient.EnsureRubyInstalled(); err != nil {
+		return err
+	}
+
+	bundClient := bundler.New()
+
+	if err := bundClient.EnsureBundlerInstalled(); err != nil {
+		return err
+	}
+
+	if err := bundClient.InstallGems(); err != nil {
+		return err
+	}
+
+	return nil
 }
