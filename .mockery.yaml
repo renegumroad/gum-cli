@@ -17,3 +17,15 @@ packages:
     interfaces:
       # select the interfaces you want mocked
       Client: {}
+
+  github.com/renegumroad/gum-cli/internal/github:
+    # place your package-specific config here
+    config:
+    interfaces:
+      # select the interfaces you want mocked
+      Client: {}
+
+  github.com/renegumroad/gum-cli/internal/projectconfig:
+    config:
+    interfaces:
+      ProjectConfig: {}

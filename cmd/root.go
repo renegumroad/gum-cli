@@ -8,6 +8,7 @@ import (
 
 	"github.com/renegumroad/gum-cli/cmd/dev"
 	initCmd "github.com/renegumroad/gum-cli/cmd/init"
+	"github.com/renegumroad/gum-cli/cmd/update"
 	"github.com/renegumroad/gum-cli/internal/log"
 	"github.com/renegumroad/gum-cli/internal/version"
 
@@ -33,6 +34,7 @@ func rootCmd() *cobra.Command {
 
 	rootCmd.AddCommand(initCmd.Cmd())
 	rootCmd.AddCommand(dev.Cmd())
+	rootCmd.AddCommand(update.Cmd())
 
 	return rootCmd
 }
